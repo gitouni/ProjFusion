@@ -1,0 +1,4 @@
+n_harmonic_functions: 6
+omega_0: 1.0
+logspace: true
+append_input: true

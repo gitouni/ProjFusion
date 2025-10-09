@@ -1,0 +1,19 @@
+encoder_argv:
+  freeze_encoders: true
+  fusion_knn: 4
+  image_hw:
+  - 224
+  - 448
+  img_encoder_args:
+    cache_dir: /home/ouni/.cache/torch/hub/
+    modelname: dinov2_vits14
+    source: local
+  img_encoder_type: vit
+  output_type: 2d
+  pointgpt_checkpoint: pretrained/pretrain_kitti_tiny/PointGPT-S/kitti_tiny_fps/ckpt-last.pth
+  pointgpt_config: cfg/pointgpt/finetune_kitti_tiny.yaml
+encoder_type: PoolFusionNet
+aggregation_type: ResAggregation
+aggregation_argv:
+  planes: 96
+  final_feat: [2, 4]

@@ -1,0 +1,33 @@
+base: cfg/model_nuscenes/common_bc.yml
+use_soid: false  
+path:
+  name: wosoid
+  base_dir: experiments/{base_dir}/
+  log: log
+  results: results
+  rewards: rewards
+  checkpoint: checkpoint
+  resume: null
+  resume_eval_first: false
+  pretrain: experiments/{base_dir}/{task_name}/checkpoint/best_model.pth
+
+agent:
+  state_argv:
+    encoder_type: PoolFusionNet
+    encoder_argv:
+      image_hw: [224, 448]
+      image_model_name: dinov2_vits14
+      pointgpt_config: cfg/pointgpt/finetune_nuscenes_tiny.yaml
+      pointgpt_checkpoint: pretrained/pretrain_nuscenes_tiny/PointGPT-S/nusc_tiny_fps/ckpt-last.pth
+      fusion_knn: 4
+      freeze_encoders: true
+      output_type: 2d
+    aggregation_type: ResAggregation
+    aggregation_argv:
+      planes: 96
+      final_feat: [2, 4]
+  ac_argv:
+    activation: leakyrelu
+    inplace: true
+    mlp_dims: [256, 128]
+  

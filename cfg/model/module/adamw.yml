@@ -1,0 +1,6 @@
+type: adamw
+args:
+  lr: 5.0E-4
+  betas: [0.9, 0.999]
+  weight_decay: 1.0E-2
+max_grad: 1.0

@@ -1,0 +1,10 @@
+img_feat_dim: 384
+point_feat_dim: 384
+img_hw: [224, 448]
+n_harmonic_functions: 0
+append_input: true
+use_mask: False
+max_dist: 0.2
+num_heads: 6
+dim_head: 64
+dropout: 0.0

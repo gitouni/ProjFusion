@@ -1,0 +1,40 @@
+path:
+  name: wosoid
+  base_dir: experiments/{base_dir}/
+  log: log
+  results: results
+  rewards: rewards
+  checkpoint: checkpoint
+  resume: null
+  resume_eval_first: false
+  pretrain: experiments/{base_dir}/{task_name}/checkpoint/best_model.pth
+
+optimizer: !inc ./cfg/model/module/adamw.yml
+scheduler: !inc ./cfg/model/module/cosine-warmup.yml
+run: !inc ./cfg/model/module/run.yml
+model:
+  state_argv:
+    encoder_argv:
+      img_encoder_type: vit
+      img_encoder_args: !inc ./cfg/model/module/vit.yml
+      image_hw: [224, 448]
+      pointgpt_checkpoint: pretrained/kitti_tiny2/ckpt-last.pth
+      pointgpt_config: cfg/pointgpt/finetune_kitti_tiny.yaml
+      margin: 1.0
+      fusion_args: !inc ./cfg/model/module/GAT.yml
+      freeze_encoders: true
+      output_type: 2d
+    encoder_type: PoolFusionNet
+    aggregation_type: MiniResAggregation
+    aggregation_argv:
+      planes: 96
+      out_dim: 128
+      final_feat: [2, 4]
+      activation_fn:
+        activation: silu
+        inplace: true
+  mlp_argv:
+    head_dims: [128]
+    activation_fn:
+      activation: silu
+      inplace: true
