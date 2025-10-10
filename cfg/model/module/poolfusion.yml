@@ -1,0 +1,9 @@
+img_encoder_type: vit
+img_encoder_args: !inc ./cfg/model/module/vit.yml
+image_hw: [224, 448]
+pointgpt_checkpoint: pretrained/kitti_tiny2/ckpt-last.pth
+pointgpt_config: cfg/pointgpt/finetune_kitti_tiny.yaml
+margin: 1.0
+fusion_args: !inc ./cfg/model/module/GAT.yml
+freeze_encoders: true
+output_type: 2d

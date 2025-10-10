@@ -20,6 +20,7 @@ class ProjFusion(nn.Module):
         getattr(self.encoder, '_lazy_init', lambda: None)()  # 调用函数的延迟初始化方法
         if "activation_fn" in aggregation_argv:
             aggregation_argv['activation_fn'] = get_activation_func(**aggregation_argv['activation_fn'])
+        aggregation_argv['inplanes'] = self.encoder.out_dim
         self.aggregation = MiniResAggregation(**aggregation_argv)
         mlp_argv['input_dim'] = self.aggregation.out_dim
         mlp_argv['output_dim'] = 3  # rot and mlp output dim

@@ -4,9 +4,8 @@ import math
 import torch
 import torch.nn as nn
 from torchvision.utils import make_grid
-from typing import Iterable, List, Tuple, Union, Optional, Dict
+from typing import Iterable, List, Tuple, Union
 from models.util.constant import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from models.model import EBM
 import time
 class CudaTimer:
     def __init__(self):
@@ -130,7 +129,7 @@ def set_device(args):
     return args
 
 
-def load_checkpoint(checkpoint:str, model:EBM, optimizer:torch.optim.Optimizer, scheduler:torch.optim.lr_scheduler.LRScheduler, *keys):
+def load_checkpoint(checkpoint:str, model: nn.Module, optimizer:torch.optim.Optimizer, scheduler:torch.optim.lr_scheduler.LRScheduler, *keys):
     chkpt = torch.load(checkpoint, map_location='cpu')
     # partial loading
     model.load_state_dict(chkpt['model'], strict=False)  # load only part of parameters

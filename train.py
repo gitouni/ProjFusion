@@ -10,6 +10,8 @@ from typing import Literal, Generator, Tuple, Dict, Union, Iterable, Callable
 from dataset import  __classdict__ as DatasetDict, DATASET_TYPE, PerturbDataset, SeqBatchSampler, BatchedPerturbDatasetOutput
 from torch.utils.data import DataLoader
 import yaml
+import yaml_include
+yaml.add_constructor("!inc", yaml_include.Constructor(base_dir='.'), yaml.SafeLoader)
 from logging import Logger
 from pathlib import Path
 import logging
@@ -96,7 +98,10 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
     # torch.backends.cudnn.benchmark=True
     # torch.backends.cudnn.enabled = False
     dataset_argv = config['dataset']['train']  # train and val
-    train_dataloader, val_dataloader = get_dataloader(config['dataset']['type'], dataset_argv['dataset']['train']['base'], dataset_argv['dataset']['val']['base'], 
+    train_dataloader, val_dataloader = get_dataloader(
+        config['dataset']['type'], 
+        dataset_argv['dataset']['train']['base'], dataset_argv['dataset']['train']['main'], 
+        dataset_argv['dataset']['val']['base'], dataset_argv['dataset']['val']['main'],
         dataset_argv['dataloader']['args'], dataset_argv['dataloader']['val_args'])
     loss_fn = get_loss(**config['loss'])
     model = ProjFusion(**config['model']).to(device)
@@ -167,9 +172,9 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
                     rot_err, tsl_err = se3_err(pred_extran, gt_extran)  # set the Tcl with the largest logits as the predicted one
                     se3_loss = se3_reduce(rot_err, tsl_err)
                 log_tracker.update('loss', loss.item())
-                log_tracker.update('rot_err', rot_err.item())
-                log_tracker.update('tsl_err', tsl_err.item())
-                log_tracker.update('se3_loss', se3_loss.item())
+                log_tracker.update('rot_err', se3_rmse(rot_err).mean().item())
+                log_tracker.update('tsl_err', se3_rmse(tsl_err).mean().item())
+                log_tracker.update('se3_loss', se3_loss.mean().item())
                 # 更新参数
                 if (bi + 1) % run_argv['log_per_iter'] == 0:
                     logger.info("\tBatch {}|{}: {}".format(bi+1, len(progress), log_tracker.result()))
@@ -177,7 +182,7 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
         scheduler.step()
         logger.info("Epoch {}|{}: {}".format(epoch, run_argv['n_epoch'], log_tracker.result()))
         if epoch % run_argv['val_per_epoch'] == 0:
-            val_loss = val_epoch(model, logger, val_dataloader, run_argv['log_per_iter'], loss_fn, run_argv['val_num_perturbations'], device)
+            val_loss = val_epoch(model, logger, val_dataloader, run_argv['log_per_iter'], loss_fn, device)
             if val_loss < best_loss:
                 logger.info("Find Best Model at Epoch {} prev | curr best loss: {} | {}".format(epoch, best_loss, val_loss))
                 best_loss = val_loss
@@ -200,16 +205,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_debug.yml")
     parser.add_argument("--model_config",type=str,default="cfg/model/projfusion.yml")
-    parser.add_argument("--base_dir",type=str,default="attn_t")
-    parser.add_argument("--task_name",type=str,default="kitti_nq_attn_debug")
+    parser.add_argument("--base_dir",type=str,default="kitti")
+    parser.add_argument("--task_name",type=str,default="projfusion")
     parser.add_argument("--resume",type=str,default=None)
     parser.add_argument("--resume_eval_first", action="store_true")
     parser.add_argument("--tr_acc_num",type=int, default=1)
     args = parser.parse_args()
     dataset_config:Dict = yaml.load(open(args.dataset_config,'r'), yaml.SafeLoader)
-    config:Dict  = yaml.load(open(args.model_config,'r'), yaml.SafeLoader)
-    base_config:Dict  = yaml.load(open(config['base'],'r'), yaml.SafeLoader)
-    config.update(base_config)
+    config: Dict  = yaml.load(open(args.model_config,'r'), yaml.SafeLoader)
     config.update(dataset_config)
     config['path']['name'] = args.task_name
     config['path']['base_dir'] = config['path']['base_dir'].format(base_dir=args.base_dir)

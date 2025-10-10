@@ -253,7 +253,8 @@ class AttentionBkUp(nn.Module):
 class Attention(nn.Module):
     def __init__(self, input_dim:int, heads = 8, dim_head = 64, dropout = 0., **argv):
         super().__init__()
-        inner_dim = dim_head *  heads
+        inner_dim = dim_head * heads
+        self.out_dim = inner_dim
         self.heads = heads
         self.norm = LayerNorm(input_dim)
 

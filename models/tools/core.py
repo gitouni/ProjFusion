@@ -526,7 +526,7 @@ class AttenFusionNet(Encoder):
 
     def _lazy_init(self):
         self.cross_attention: __ATTENTION__ = __ATTENTION_TYPE__[self.cross_attnetion_type](**self.cross_attention_argv)  # additional head for coordinate attention (query: feat_2d, kv: feat_3d)
-        
+        self.out_dim = self.cross_attention.out_dim
     def kargv_for_aggregation(self) -> Dict:
         return self.aggregation_kargv
     

@@ -252,8 +252,8 @@ class BaseKITTIDataset(Dataset):
             *_,rev = transform.binary_projection((REVH,REVW), K_cam_extend, calibed_pcd)
             pcd = pcd[rev,:]
 
-        pcd = self.resample_tran(pcd) # (n,3)
-        _pcd = self.tensor_tran(pcd.T)  # (3, n)  easier for transformation
+        pcd = self.resample_tran(pcd) # (n, 3)
+        _pcd = self.tensor_tran(pcd)  # (n, 3)  easier for transformation
         T_cam2velo = self.tensor_tran(T_cam2velo)
         camera_info = {
             "fx": K_cam[0,0].item(),
@@ -561,7 +561,7 @@ class NuSceneDataset(Dataset):
         pcl_path = os.path.join(self.nusc.dataroot, pointsensor['filename'])
         img:Image.Image = Image.open(img_path)
         pc = LidarPointCloud.from_file(pcl_path)
-        pcd = np.copy(pc.points).transpose(1,0)[:,:3]
+        pcd = np.copy(pc.points).transpose(1,0)[:,:3]  # (N, 3)
         lidar_record = self.nusc.get('calibrated_sensor', pointsensor['calibrated_sensor_token'])
         cam_record = self.nusc.get('calibrated_sensor', cam['calibrated_sensor_token'])
         pose_lidar = np.eye(4)
@@ -753,17 +753,20 @@ class PerturbDataset(Dataset):
         if self.file is None:  # randomly generate igt
             igt_x = self.transform.generate_transform(1)
             igt = se3.exp(igt_x).squeeze(0)
-            # gt = transform.inv_pose(igt)
         else:
             igt = se3.exp(self.perturb[:,total_index,:]).squeeze(0)  # (1, 6) -> (1, 4, 4) -> (4, 4)
-            # gt = transform.inv_pose(igt).squeeze(0)
         if self.disentangle:
             init_extran = extran.clone()
             init_extran[:3, :3] = igt[:3, :3] @ extran[:3, :3]
             init_extran[:3, 3] = igt[:3, 3] + extran[:3, 3]
+            # disentangle transformation
+            gt = torch.eye(4)
+            gt[:3, :3] = igt[:3, :3].T
+            gt[:3, 3] = -igt[:3, 3]
         else:
             init_extran = igt @ extran
-        new_data = dict(img=data['img'],pcd=data['pcd'], gt_extran=extran, init_extran=init_extran, camera_info=data['camera_info'],
+            gt = transform.inv_pose(igt)
+        new_data = dict(img=data['img'],pcd=data['pcd'], gt_extran=extran, init_extran=init_extran, pose_target=gt, camera_info=data['camera_info'],
                         group_idx=data['group_idx'], sub_idx=data['sub_idx'])
         return new_data
     
@@ -776,7 +779,7 @@ class PerturbDataset(Dataset):
         batch['pcd'] = torch.stack([x['pcd'] for x in zipped_x])
         batch['init_extran'] = torch.stack([x['init_extran'] for x in zipped_x])
         batch['gt_extran'] = torch.stack([x['gt_extran'] for x in zipped_x])
-        # batch['pose_target'] = torch.stack([x['pose_target'] for x in zipped_x])
+        batch['pose_target'] = torch.stack([x['pose_target'] for x in zipped_x])
         batch['camera_info'] = zipped_x[0]['camera_info']
         batch['camera_info']['fx'] = torch.tensor([x['camera_info']['fx'] for x in zipped_x], dtype=torch.float32)
         batch['camera_info']['fy'] = torch.tensor([x['camera_info']['fy'] for x in zipped_x], dtype=torch.float32)
