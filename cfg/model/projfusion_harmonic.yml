@@ -16,7 +16,7 @@ loss: !inc ./cfg/model/module/loss.yml
 model:
   type: ProjFusion
   args:
-    encoder_argv: !inc cfg/model/module/attenfusion.yml
+    encoder_argv: !inc cfg/model/module/attenfusion_harmonic.yml
     aggregation_argv: !inc cfg/model/module/miniaggregation.yml
     mlp_argv:
       head_dims: [128, 128]

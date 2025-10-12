@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 from einops import repeat
 
 class RoPE2D(nn.Module):
-    def __init__(self, dim: int, q_coord_y: torch.Tensor, q_coord_x: torch.Tensor, base_freq: int = 10_000):
+    def __init__(self, dim: int, q_coord_y: torch.Tensor, q_coord_x: torch.Tensor, base_freq: int = 1000):
         """
         dim: 每个 head 的维度
         num_heads: 注意力头数
@@ -24,8 +24,8 @@ class RoPE2D(nn.Module):
         self.base_freq = base_freq
 
         # 分别处理 y/x 方向
-        self.register_buffer('inv_hfreq', 1.0 / (self.base_freq ** (torch.arange(0, dim // 2, 2).float() / (dim // 2))))  # D // 4
-        self.register_buffer('inv_wfreq', 1.0 / (self.base_freq ** (torch.arange(0, dim // 2, 2).float() / (dim // 2))))  # D // 4
+        self.register_buffer('inv_hfreq', math.pi / (self.base_freq ** (torch.arange(0, dim // 2, 2).float() / (dim // 2))))  # D // 4
+        self.register_buffer('inv_wfreq', math.pi / (self.base_freq ** (torch.arange(0, dim // 2, 2).float() / (dim // 2))))  # D // 4
 
         # 分别处理 y/x 方向的sin和cos
         q_sin_y, q_cos_y = self._compute_sin_cos_from_pos(q_coord_y, self.inv_hfreq)  # (H*W, D // 4)

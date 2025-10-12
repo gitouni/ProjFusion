@@ -29,10 +29,11 @@ dataset:
           scene_names: cache/nuscenes_split/val.txt
           <<: *dataset_common_args
           pcd_sample_num: 8192
-        <<: *train_main
+        main:
+          <<: *train_main
     dataloader:
       common_args: &dataloader_common_args
-        num_workers: 8
+        num_workers: 4
         pin_memory: true
       args:
         batch_sampler:
@@ -54,7 +55,7 @@ dataset:
         version: v1.0-test
         scene_names: null
         <<: *dataset_common_args
-        pcd_sample_num: 20000
+        pcd_sample_num: 8192
       main:
         <<: *test_common_main
         file: cache/nuscenes/{name}.txt
@@ -64,7 +65,7 @@ dataset:
       shuffle: false
       drop_last: false
       pin_memory: true
-      num_workers: 8
+      num_workers: 4
 
   test_time:
     dataset:

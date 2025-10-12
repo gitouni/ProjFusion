@@ -32,7 +32,7 @@ dataset:
           <<: *train_main
     dataloader:
       common_args: &dataloader_common_args
-        num_workers: 0
+        num_workers: 4
         pin_memory: true
       args:
         batch_sampler:
@@ -94,11 +94,11 @@ dataset:
           <<: *test_main
           file: cache/kitti_large/test_18.txt
     dataloader:
-      batch_size: 4
+      batch_size: 16
       shuffle: false
       drop_last: false
       pin_memory: true
-      num_workers: 2
+      num_workers: 4
 
   test_time:
     dataset:

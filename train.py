@@ -16,16 +16,13 @@ from logging import Logger
 from pathlib import Path
 import logging
 # import torch.nn as nn
-from einops import rearrange, repeat
 from accelerate import Accelerator
 from core.tools import load_checkpoint, save_checkpoint
 from core.logger import LogTracker, fmt_time, print_warning
 from models.lr_scheduler import get_lr_scheduler, get_optimizer
-from models.pointgpt.utils.misc import worker_init_fn
-from models.environment.environment import Env
-from models.loss import se3_err, se3_reduce, se3_rmse, get_loss, geodesic_loss
+from models.loss import se3_err, se3_reduce, se3_rmse, get_loss
 from models.util import se3
-from models.model import ProjFusion
+from models.model import ProjFusion, ProjDualFusion
 
 def unique_append(s:str, arr:list):
     if not s in arr:
@@ -57,7 +54,7 @@ def val_epoch(model: ProjFusion, logger: Logger, loader: Generator[BatchedPertur
         log_per_iter: int, loss_fn: Callable[..., torch.Tensor], device: torch.device) -> float:
     model.eval()
     progress = tqdm(loader, total=len(loader))
-    log_tracker = LogTracker('loss','rot_err','tsl_err','se3_loss', phase='val')
+    log_tracker = LogTracker('loss','rot_err','tsl_err','se3_err', phase='val')
     num_batches = len(loader)
     for i, data in enumerate(progress):
         img = data['img'].to(device)
@@ -75,10 +72,10 @@ def val_epoch(model: ProjFusion, logger: Logger, loader: Generator[BatchedPertur
         log_tracker.update('loss', loss.item())
         log_tracker.update('rot_err', se3_rmse(rot_err).mean().item())
         log_tracker.update('tsl_err', se3_rmse(tsl_err).mean().item())
-        log_tracker.update('se3_loss', se3_loss.mean().item())
+        log_tracker.update('se3_err', se3_loss.mean().item())
         if (i+1) % log_per_iter == 0 or i+1 == len(loader):
             logger.info("\tBatch {}|{} {}".format(i+1, num_batches, log_tracker.result()))
-    return log_tracker.avg('se3_loss')
+    return log_tracker.avg('se3_err')
 
 def main(config:Dict, config_path:Union[str, Iterable[str]]):
     run_argv: Dict = config['run']
@@ -104,7 +101,13 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
         dataset_argv['dataset']['val']['base'], dataset_argv['dataset']['val']['main'],
         dataset_argv['dataloader']['args'], dataset_argv['dataloader']['val_args'])
     loss_fn = get_loss(**config['loss'])
-    model = ProjFusion(**config['model']).to(device)
+    if config['model']['type'] == 'ProjDualFusion':
+        MODEL_CLASS = ProjDualFusion
+    elif config['model']['type'] == 'ProjFusion':
+        MODEL_CLASS = ProjFusion
+    else:
+        raise NotImplementedError(f"Unknown model type: {config['model']['type']}")
+    model = MODEL_CLASS(**config['model']['args']).to(device)
     optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), config['optimizer']['type'], **config['optimizer']['args'])
     clip_grad = config['optimizer']['max_grad']
     scheduler = get_lr_scheduler(optimizer, config['scheduler']['type'], **config['scheduler']['args'])
@@ -174,7 +177,7 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
                 log_tracker.update('loss', loss.item())
                 log_tracker.update('rot_err', se3_rmse(rot_err).mean().item())
                 log_tracker.update('tsl_err', se3_rmse(tsl_err).mean().item())
-                log_tracker.update('se3_loss', se3_loss.mean().item())
+                log_tracker.update('se3_err', se3_loss.mean().item())
                 # 更新参数
                 if (bi + 1) % run_argv['log_per_iter'] == 0:
                     logger.info("\tBatch {}|{}: {}".format(bi+1, len(progress), log_tracker.result()))
@@ -204,9 +207,9 @@ def str2bool(s:str) -> bool:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_debug.yml")
-    parser.add_argument("--model_config",type=str,default="cfg/model/projfusion.yml")
+    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion.yml")
     parser.add_argument("--base_dir",type=str,default="kitti")
-    parser.add_argument("--task_name",type=str,default="projfusion")
+    parser.add_argument("--task_name",type=str,default="debug")
     parser.add_argument("--resume",type=str,default=None)
     parser.add_argument("--resume_eval_first", action="store_true")
     parser.add_argument("--tr_acc_num",type=int, default=1)

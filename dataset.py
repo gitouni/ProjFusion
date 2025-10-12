@@ -542,7 +542,7 @@ class NuSceneDataset(Dataset):
             "projection_mode": "perspective"
         }
         _img = self.img_tran(img)
-        _pcd = self.tensor_tran(pcd.T)  # (3,N)
+        _pcd = self.tensor_tran(pcd)  # (N, 3)
         extran = self.tensor_tran(extran)
         return dict(img=_img,pcd=_pcd, camera_info=camera_info, extran=extran, group_idx=group_idx, sub_idx=sub_idx)
     

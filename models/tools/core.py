@@ -514,7 +514,7 @@ class AttenFusionNet(Encoder):
             self.harmonic_embedding = None
             input_dim = embed_2d
         self.cross_attnetion_type = attention_type
-        self.cross_attention_argv: AttentionArgv = dict(input_dim = input_dim, height=self.feat_h, width=self.feat_w, **attention_argv)
+        self.cross_attention_argv: AttentionArgv = dict(input_dim = input_dim, height=self.feat_h, width=self.feat_w, **attention_argv)  # height和width是为了兼容RoPE
         self.use_mask = use_mask
         # self.use_pos_embed = use_pos_embed
         self.margin = margin
@@ -636,6 +636,202 @@ class AttenFusionNet(Encoder):
         else:
             raise NotImplementedError('Unknown type: {}, must be 1d or 2d'.format(self.output_type))
 
+
+class AttenDualFusionNet(Encoder):
+    def __init__(self,
+                # 2D image Encoder
+                image_hw: Tuple[int,int],
+                img_encoder_type: Literal['vit','resnet'],
+                img_encoder_args: Dict[str, str],
+                # 3D Encoder block
+                pointgpt_config: str,
+                pointgpt_checkpoint: str,
+                # Harmonic Function
+                use_coord: bool,
+                use_harmonic: bool,
+                harmonic_args: Dict,
+                # boundary mask
+                margin: float,
+                use_mask: bool,
+                # Cross Attention
+                attention_type: str,
+                attention_argv: Dict,
+                # Global Config
+                freeze_encoders: bool,
+                # type:
+                output_type: Literal['1d','2d']
+                ):
+        super().__init__()
+        if img_encoder_type == 'vit':
+            self.fnet_2d = ViTEncoder(**img_encoder_args, image_hw=image_hw, freeze=freeze_encoders, reshape=True)  # freeze parameters of fnet_2d
+        elif img_encoder_type == 'resnet':
+            self.fnet_2d = ResnetEncoder(**img_encoder_args, freeze=freeze_encoders)
+        else:
+            raise NotImplementedError("encoder type must be 'vit' or 'resnet'")
+        self.fnet_3d, self.fnet_3d_max_depth = load_pointgpt(pointgpt_config, pointgpt_checkpoint)
+        if freeze_encoders:
+            self.fnet_2d = FrozenModule(self.fnet_2d)
+            self.fnet_3d = FrozenModule(self.fnet_3d)
+        embed_2d = self.fnet_2d.get_output_dim()
+        embed_3d = self.fnet_3d.trans_dim
+        num_heads = attention_argv.get('heads')
+        head_dims = attention_argv.get('dim_head')
+        assert embed_2d == embed_3d, 'fnet2d output_dim ({}) != fnet3d output_dim ({})'.format(embed_2d, embed_3d)
+        assert embed_2d % num_heads == 0,'embedding ({}) % num_heads ({}) !=0'.format(embed_2d, num_heads)
+        self.embed_dim = num_heads * head_dims
+        if img_encoder_type == 'vit':
+            self.feat_w = image_hw[1] // self.fnet_2d.patch_size
+            self.feat_h = image_hw[0] // self.fnet_2d.patch_size
+        else:
+            self.feat_w = image_hw[1] // 32
+            self.feat_h = image_hw[0] // 32
+        if output_type == '1d':  # attention aggregation
+            self.aggregation_kargv = {"embed_dim": self.embed_dim, "num_tokens": self.feat_h * self.feat_w}
+        elif output_type == '2d':
+            self.aggregation_kargv = {"inplanes": self.embed_dim}
+        else:
+            raise NotImplementedError("output_type must be '1d' or '2d', got {}".format(output_type))
+        if use_coord:
+            if use_harmonic:
+                self.harmonic_embedding = HarmonicEmbedding(**harmonic_args)
+                input_dim = embed_2d + self.harmonic_embedding.get_output_dim(input_dims=2)  # projected points are 2D vectors
+            else:
+                self.harmonic_embedding = nn.Identity()
+                input_dim = embed_2d + 2
+            img_coord_x, img_coord_y = coord_2d_mesh(self.feat_h, self.feat_w, normalize=True)  # (H*W, 2)
+            img_coord_xy = torch.stack([img_coord_x.flatten(), img_coord_y.flatten()], dim=-1)  # (h*w, 2)
+            self.img_uv_emb: torch.Tensor = self.harmonic_embedding(img_coord_xy)  # (H*W, D)
+        else:
+            self.harmonic_embedding = None
+            input_dim = embed_2d
+        self.cross_attnetion_type = attention_type
+        self.cross_attention_argv: AttentionArgv = dict(input_dim = input_dim, height=self.feat_h, width=self.feat_w, **attention_argv)  # height和width是为了兼容RoPE
+        self.use_mask = use_mask
+        # self.use_pos_embed = use_pos_embed
+        self.margin = margin
+        # if use_pos_embed:
+        #     self.pos_embed = PositionEmbeddingCoordsSine2D(self.embed_dim, self.feat_h, self.feat_w, margin, pos_embed_temp)
+        #     self.pos_embed_patches = nn.Parameter(self.pos_embed.get_patched_coordinate_embedding(flatten=True).unsqueeze(0), requires_grad=False)  # (hw, N) -> (1, hw, N)
+        self.output_type = output_type
+        self.feat_buffer = dict()
+
+    def _lazy_init(self):
+        self.rot_cross_attention: __ATTENTION__ = __ATTENTION_TYPE__[self.cross_attnetion_type](**self.cross_attention_argv)  # additional head for coordinate attention (query: feat_2d, kv: feat_3d)
+        self.tsl_cross_attention: __ATTENTION__ = __ATTENTION_TYPE__[self.cross_attnetion_type](**self.cross_attention_argv)
+        self.out_dim = self.rot_cross_attention.out_dim
+        
+    def kargv_for_aggregation(self) -> Dict:
+        return self.aggregation_kargv
+    
+    def clear_buffer(self):
+        self.feat_buffer.clear()
+
+    def store_buffer(self, img: torch.Tensor, pcd: torch.Tensor):
+        cache = self.encoder_cache(img, pcd)
+        self.store_buffer_direct(cache)
+
+    def store_buffer_direct(self, cache: StateCache):
+        self.feat_buffer.update(cache)
+
+    @torch.no_grad()
+    def encoder_cache(self, img: torch.Tensor, pcd: torch.Tensor) -> StateCache:
+        feat_2d = self.fnet_2d(img)  # (B, C, H, W)
+        xyz, feat_3d = self.fnet_3d.extraction(pcd / self.fnet_3d_max_depth)  # (B, M, 3), (B, M, D)
+        feat_2d = rearrange(feat_2d, 'b c n h -> b (n h) c')  # (B, H*W, C)
+        return dict(feat_2d=feat_2d,  # (B, N, C)
+                    feat_3d=feat_3d,  # (B, M, D)
+                    xyz=xyz)  # (B, M, 3)
+    
+    def get_buffers(self) -> StateCache:
+        return self.feat_buffer
+    
+    def forward(self, img: torch.Tensor, pcd: torch.Tensor, Tcl: torch.Tensor, camera_info: BatchedCameraInfoDict):
+        """forward through data
+
+        Args:
+            img (torch.Tensor): B, C, H, W
+            pcd (torch.Tensor): B, M, 3
+            Tcl (torch.Tensor): B, 4, 4
+            camera_info (BatchedCameraInfoDict): intran information for projection
+        Returns:
+            torch.Tensor: crossed features of point cloud (B, M, D), M is the group number of pcd
+        """
+        if len(self.feat_buffer) == 0:
+            cache = self.encoder_cache(img, pcd)
+        else:
+            cache = self.get_buffers()
+        return self.cache_forward(cache, Tcl, camera_info)
+
+    def cache_forward(self, cache: StateCache, Tcl: torch.Tensor, camera_info: BatchedCameraInfoDict):
+        """forward through cache/observation
+
+        Args:
+            cache (Dict[str, torch.Tensor]): cache output by the encoder
+            Tcl (torch.Tensor): init_extran (B, 4, 4)
+            camera_info (Dict[str, torch.Tensor]): intran information for projection
+
+        Returns:
+            torch.Tensor: crossed features of point cloud (B*G, M, D) or (B*G, D, h, w)
+        """
+        feat_2d, feat_3d, xyz = cache['feat_2d'], cache['feat_3d'], cache['xyz']  # (B, H*W, D), (B, M, D), (B, M, 3)
+        sensor_h, sensor_w = camera_info['sensor_h'], camera_info['sensor_w']
+        # Apply SE(3) transform for each group
+        xyz_tf = se3_transform(Tcl, xyz.transpose(-1, -2))  # (B, 4, 4), (B, N, 3) -> (B, 3, N)
+
+        # Prepare camera info for feature resolution
+        feat_camera_info = camera_info.copy()
+        feat_w, feat_h = self.feat_w, self.feat_h
+        kx = feat_w / sensor_w
+        ky = feat_h / sensor_h
+        feat_camera_info.update({
+            'sensor_w': feat_w,
+            'sensor_h': feat_h,
+            'fx': kx * camera_info['fx'],
+            'fy': ky * camera_info['fy'],
+            'cx': kx * camera_info['cx'],
+            'cy': ky * camera_info['cy']
+        })
+        # Project point cloud to image plane
+        
+        proj_uv = project_pc2image(xyz_tf, feat_camera_info) # (B, 3, N) -> (B, 2, N)
+        proj_uv.transpose_(-1, -2).contiguous()  # (B, 2, N) -> (B, N, 2)
+        # Normalize and clamp projection coordinates
+        margin_ratio = [-1 - self.margin, 1 + self.margin]
+        proj_uv[..., 0] = normalize_grid(proj_uv[..., 0], feat_w)  # (B, N)
+        proj_uv[..., 1] = normalize_grid(proj_uv[..., 1], feat_h)  # (B, N)
+        # Build attention mask if needed
+        if not self.use_mask:
+            attn_mask = None
+        else:
+            valid_proj = (
+                (proj_uv[..., 0] >= margin_ratio[0]) & (proj_uv[..., 0] <= margin_ratio[1]) &
+                (proj_uv[..., 1] >= margin_ratio[0]) & (proj_uv[..., 1] <= margin_ratio[1]) & xyz_tf[..., 2, :] > 0  # only use depth > 0 points
+            )  # (B, N)
+            attn_mask = valid_proj.unsqueeze(-2).expand(-1, self.feat_h * self.feat_w, -1).detach()  # (B, H*W, N)
+        proj_uv.clamp_(*margin_ratio)  # (B, N, 2)
+        B = proj_uv.shape[0]
+        if self.harmonic_embedding is not None:  # force 3d attention
+            feat_3d_pos_emb = self.harmonic_embedding(proj_uv).detach()  # (B, N, D2)
+            feat_3d = torch.cat([feat_3d, feat_3d_pos_emb], dim=-1)  # (B, N, D1+D2)
+            feat_2d_pos_emb = self.img_uv_emb[None, ...].expand(B, -1, -1).to(feat_3d_pos_emb).detach()  # (B, H*W, D)
+            feat_2d = torch.cat([feat_2d, feat_2d_pos_emb], dim=-1)  # (B, H*W, D1+D2)
+        rot_cross_feat_2d = self.rot_cross_attention(
+            feat_2d, feat_3d,
+            k_coord_xy=proj_uv,
+            attn_mask=attn_mask
+        )  # (B, H*W, D)
+        tsl_cross_feat_2d = self.tsl_cross_attention(
+            feat_2d, feat_3d,
+            k_coord_xy=proj_uv,
+            attn_mask=attn_mask
+        )  # (B, H*W, D)
+        # Output based on type
+        if self.output_type == '1d':
+            return rot_cross_feat_2d, tsl_cross_feat_2d  # (B, M, D)
+        elif self.output_type == '2d':
+            return map(lambda x: rearrange(x, 'b (h w) d -> b d h w', h=feat_h, w=feat_w), [rot_cross_feat_2d, tsl_cross_feat_2d])  # (B, D, h, w)
+        else:
+            raise NotImplementedError('Unknown type: {}, must be 1d or 2d'.format(self.output_type))
 
 class PoolFusionNet(Encoder):
     def __init__(self,

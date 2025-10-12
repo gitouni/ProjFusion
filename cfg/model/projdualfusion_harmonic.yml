@@ -14,9 +14,9 @@ scheduler: !inc ./cfg/model/module/cosine-warmup.yml
 run: !inc ./cfg/model/module/run.yml
 loss: !inc ./cfg/model/module/loss.yml
 model:
-  type: ProjFusion
+  type: ProjDualFusion
   args:
-    encoder_argv: !inc cfg/model/module/attenfusion.yml
+    encoder_argv: !inc cfg/model/module/attenfusion_harmonic.yml
     aggregation_argv: !inc cfg/model/module/miniaggregation.yml
     mlp_argv:
       head_dims: [128, 128]

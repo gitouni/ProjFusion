@@ -1,0 +1,14 @@
+image_hw: [224, 448]
+img_encoder_type: vit
+img_encoder_args: !inc ./cfg/model/module/vit.yml
+pointgpt_checkpoint: pretrained/pretrain_kitti_tiny/PointGPT-S/kitti_tiny_fps/ckpt-last.pth
+pointgpt_config: ./cfg/pointgpt/finetune_kitti_tiny.yaml
+use_coord: true
+use_harmonic: false
+harmonic_args: !inc ./cfg/model/module/submodule/harmonic.yml
+margin: 1.0
+use_mask: false
+attention_type: Attention
+attention_argv: !inc ./cfg/model/module/submodule/attention_rope.yml
+freeze_encoders: true
+output_type: 2d

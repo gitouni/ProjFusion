@@ -180,76 +180,6 @@ def FeedForward(dim, hidden_dim, out_dim=None, dropout = 0., activation_fn: Call
     )
 
 # Modified From https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/na_vit.py
-class AttentionBkUp(nn.Module):
-    def __init__(self, input_dim:int, heads = 8, dim_head = 64, dropout = 0., **argv):
-        super().__init__()
-        inner_dim = dim_head *  heads
-        self.heads = heads
-        self.norm = LayerNorm(input_dim)
-
-        self.q_norm = RMSNorm(heads, dim_head)
-        self.k_norm = RMSNorm(heads, dim_head)
-
-        self.softmax = nn.Softmax(dim=-1)
-        self.dropout = nn.Dropout(dropout)
-
-        self.to_q = nn.Linear(input_dim, inner_dim, bias = False)
-        self.to_kv = nn.Linear(input_dim, inner_dim * 2, bias = False)
-        
-        self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, inner_dim, bias = False),
-            nn.Dropout(dropout)
-        )
-
-    def forward(
-        self,
-        x: torch.Tensor,
-        context: Optional[torch.Tensor] = None,
-        attn_mask: Optional[torch.Tensor] = None,
-        **argv
-    ):
-        """attention rope
-
-        Args:
-            x (torch.Tensor): (B, N, D) or (B*G, N, D)
-            context (torch.Tensor): (B, N, D) or (B*G, N, D).
-            attn_mask (Optional[torch.Tensor], optional): _description_. Defaults to None.
-        Raises:
-            NotImplementedError: _description_
-
-        Returns:
-            _type_: _description_
-        """
-        x = self.norm(x)  # (B, N, D)
-        kv_input = default(context, x)
-        kv: torch.Tensor = self.to_kv(kv_input)
-        q = self.to_q(x)
-        k, v = kv.chunk(2, dim=-1)  # (B, M, D), (B, M, D)
-        
-        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), [q, k, v])  # (B, N, D) -> (B, H, N, d)
-
-        q: torch.Tensor = self.q_norm(q)  # (B, H, N, d)
-        k: torch.Tensor = self.k_norm(k)  # (B, H, N, d)
-        dots = torch.matmul(q, k.transpose(-1, -2)) # (B, h, N, D) * (B, h, D, M) -> (B, h, N, M)
-
-        if exists(attn_mask):
-            if attn_mask.ndim == 2:
-                attn_mask = attn_mask[None, None, :, :]
-            elif attn_mask.ndim == 3:
-                attn_mask = attn_mask[:, None, :, :]
-            elif attn_mask.ndim == 4:
-                pass
-            else:
-                raise NotImplementedError("attn_mask.ndim must be 2,3,4, got {}".format(attn_mask.ndim))
-            dots = dots.masked_fill(~attn_mask, -torch.finfo(dots.dtype).max) # assign value of mask to -inf (after softmax will be 0)
-
-        attn = self.softmax(dots)
-        attn = self.dropout(attn)  # (B, N, M)
-
-        out = torch.matmul(attn, v)
-        out = rearrange(out, 'b h n d -> b n (h d)')  # head merging
-        return self.to_out(out)  # (B*G, N, D)
-
 class Attention(nn.Module):
     def __init__(self, input_dim:int, heads = 8, dim_head = 64, dropout = 0., **argv):
         super().__init__()
@@ -606,8 +536,10 @@ class AttentionELU(nn.Module):
         out = rearrange(out, 'b h n d -> b n (h d)')  # head merging
         return self.to_out(out)
 
+
+
 class AttentionRoPE(Attention):
-    def __init__(self, input_dim:int, height: int, width: int, base_freq: float, heads = 8, dim_head = 64, dropout = 0.):
+    def __init__(self, input_dim:int, height: int, width: int, base_freq: float, heads = 8, dim_head = 64, dropout = 0., **argv):
         super().__init__(input_dim, heads, dim_head, dropout)
         self.q_coord_x, self.q_coord_y = coord_2d_mesh(height, width, normalize=True)  # (H*W,), (H*W, )
         self.rope = RoPE2D(dim_head, self.q_coord_y.flatten(), self.q_coord_x.flatten(), base_freq=base_freq)
@@ -622,9 +554,9 @@ class AttentionRoPE(Attention):
         """attention rope
 
         Args:
-            x (torch.Tensor): (B, N, D) or (B*G, N, D)
-            context (Optional[torch.Tensor], optional): (B, N, D) or (B*G, N, D).
-            k_coord_xy (torch.Tensor): (B, G, N, 2) or (B*G, N, 2).
+            x (torch.Tensor): (B, N, D)
+            context (Optional[torch.Tensor], optional): (B, N, D).
+            k_coord_xy (torch.Tensor): (B, N, 2).
             attn_mask (Optional[torch.Tensor], optional): _description_. Defaults to None.
         Raises:
             NotImplementedError: _description_
@@ -632,28 +564,6 @@ class AttentionRoPE(Attention):
         Returns:
             _type_: _description_
         """
-        x = self.norm(x)  # (B, N, D)
-        kv_input = default(context, x)
-        kv: torch.Tensor = self.to_kv(kv_input)
-        q = self.to_q(x)
-        k, v = kv.chunk(2, dim=-1)  # (B, M, D), (B, M, D)
-        
-        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), [q, k, v])  # (B, N, D) -> (B, H, N, d)
-
-        q: torch.Tensor = self.q_norm(q)  # (B, H, N, d)
-        k: torch.Tensor = self.k_norm(k)  # (B, H, N, d)
-        if k_coord_xy.ndim == 3:
-            assert q.shape[0] == k_coord_xy.shape[0], f"batch size of qk ({q.shape[0]}) != coord ({k_coord_xy.shape[0]})"
-        elif k_coord_xy.ndim == 4:    
-            G = k_coord_xy.shape[1]
-            q, k, v = map(lambda x: x.unsqueeze(1).expand(-1, G, -1, -1, -1).flatten(end_dim=1), [q, k, v])  # (B*G, H, N, d)
-            k_coord_xy = k_coord_xy.flatten(end_dim=1)  # (B, G, N, 2) -> (B*G, N, 2)
-        else:
-            raise ValueError(f"Unknown k_coord_xy dimension {k_coord_xy.ndim}")
-            
-        q, k = self.rope(q, k, k_coord_xy)
-        dots = torch.matmul(q, k.transpose(-1, -2)) # (B, h, N, D) * (B, h, D, M) -> (B, h, N, M)
-
         if exists(attn_mask):
             if attn_mask.ndim == 2:
                 attn_mask = attn_mask[None, None, :, :]
@@ -663,14 +573,23 @@ class AttentionRoPE(Attention):
                 pass
             else:
                 raise NotImplementedError("attn_mask.ndim must be 2,3,4, got {}".format(attn_mask.ndim))
-            dots = dots.masked_fill(~attn_mask, -torch.finfo(dots.dtype).max) # assign value of mask to -inf (after softmax will be 0)
-
-        attn = self.softmax(dots)
-        attn = self.dropout(attn)  # (B, N, M)
-
-        out = torch.matmul(attn, v)
+        x = self.norm(x)  # (B, N, D)
+        kv_input = default(context, x)
+        kv: torch.Tensor = self.to_kv(kv_input)
+        q = self.to_q(x)
+        k, v = kv.chunk(2, dim=-1)  # (B, M, D), (B, M, D)
+        
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), [q, k, v])  # (B, N, D) -> (B, H, N, d)
+        
+        q: torch.Tensor = self.q_norm(q)  # (B, H, N, d)
+        k: torch.Tensor = self.k_norm(k)  # (B, H, N, d)
+        q, k = self.rope(q, k, k_coord_xy)
+        out = F.scaled_dot_product_attention(q, k, v,
+            attn_mask = attn_mask,
+            dropout_p = (self.dropout_p if self.training else 0.0),
+            scale=1.0)  # (B, N, H, D)
         out = rearrange(out, 'b h n d -> b n (h d)')  # head merging
-        return self.to_out(out)
+        return self.to_out(out)  # (B*G, N, D)
 
 
 class AttentionELURoPE(AttentionELU):

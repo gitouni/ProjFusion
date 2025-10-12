@@ -14,7 +14,7 @@ scheduler: !inc ./cfg/model/module/cosine-warmup.yml
 run: !inc ./cfg/model/module/run.yml
 loss: !inc ./cfg/model/module/loss.yml
 model:
-  type: ProjFusion
+  type: ProjDualFusion
   args:
     encoder_argv: !inc cfg/model/module/attenfusion.yml
     aggregation_argv: !inc cfg/model/module/miniaggregation.yml
