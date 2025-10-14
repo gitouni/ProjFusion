@@ -4,7 +4,7 @@ from typing import List, Generator, Tuple, Dict, Iterable, Callable
 from itertools import islice
 from dataset import __classdict__ as DatasetDict, DATASET_TYPE, PerturbDataset, BatchedPerturbDatasetOutput
 import yaml
-import yaml_include
+import yaml_include  # pip install pyyaml-include
 yaml.add_constructor("!inc", yaml_include.Constructor(base_dir='.'), yaml.SafeLoader)
 from logging import Logger
 from pathlib import Path
@@ -159,7 +159,7 @@ def main(config:Dict, resume:bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="experiments/kitti/projfusion/log/projfusion.yml")
+    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_resnet/log/projdualfusion_harmonic_resnet.yml")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     config: Dict  = yaml.load(open(args.config,'r'), yaml.SafeLoader)

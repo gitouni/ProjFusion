@@ -244,7 +244,7 @@ class SEConvBlock(nn.Module):
 class ResnetEncoder(nn.Module):
     """Pytorch module for a resnet encoder
     """
-    def __init__(self, num_layers:Literal[18, 34, 50, 101, 152], pretrained:bool, freeze:bool=True):
+    def __init__(self, num_layers:Literal[18, 34, 50, 101, 152], pretrained: bool, second_last: bool = True):
         super(ResnetEncoder, self).__init__()
 
         self.num_ch_enc = np.array([64, 64, 128, 256, 512])
@@ -265,12 +265,11 @@ class ResnetEncoder(nn.Module):
 
         if num_layers > 34:
             self.num_ch_enc[1:] *= 4
-        if freeze:
-            self.freeze()
-            
-    def freeze(self):
-        for param in self.parameters():
-            param.requires_grad_(False)
+        self.second_last = second_last
+        if not second_last:
+            self.downsample_ratio = 32
+        else:
+            self.downsample_ratio = 16
 
     def forward(self, x):
         x = self.encoder.conv1(x)
@@ -280,11 +279,17 @@ class ResnetEncoder(nn.Module):
         x = self.encoder.layer1(x)
         x = self.encoder.layer2(x)
         x = self.encoder.layer3(x)
-        x = self.encoder.layer4(x)
+        if not self.second_last:
+            x = self.encoder.layer4(x)
         return x
 
     def get_output_dim(self) -> int:
-        return self.num_ch_enc[-1]
+        if not self.second_last:
+            return self.num_ch_enc[-1]
+        else:
+            return self.num_ch_enc[-2]
+    
+    
     
 class Encoder2D(nn.Module):
     def __init__(self, depth:Literal[18, 34, 50, 101, 152]=18, pretrained:bool=True):
@@ -472,9 +477,9 @@ class AttenFusionNet(Encoder):
                 ):
         super().__init__()
         if img_encoder_type == 'vit':
-            self.fnet_2d = ViTEncoder(**img_encoder_args, image_hw=image_hw, freeze=freeze_encoders, reshape=True)  # freeze parameters of fnet_2d
+            self.fnet_2d = ViTEncoder(**img_encoder_args, image_hw=image_hw, reshape=True)  # freeze parameters of fnet_2d
         elif img_encoder_type == 'resnet':
-            self.fnet_2d = ResnetEncoder(**img_encoder_args, freeze=freeze_encoders)
+            self.fnet_2d = ResnetEncoder(**img_encoder_args)
         else:
             raise NotImplementedError("encoder type must be 'vit' or 'resnet'")
         self.fnet_3d, self.fnet_3d_max_depth = load_pointgpt(pointgpt_config, pointgpt_checkpoint)
@@ -485,15 +490,13 @@ class AttenFusionNet(Encoder):
         embed_3d = self.fnet_3d.trans_dim
         num_heads = attention_argv.get('heads')
         head_dims = attention_argv.get('dim_head')
-        assert embed_2d == embed_3d, 'fnet2d output_dim ({}) != fnet3d output_dim ({})'.format(embed_2d, embed_3d)
-        assert embed_2d % num_heads == 0,'embedding ({}) % num_heads ({}) !=0'.format(embed_2d, num_heads)
         self.embed_dim = num_heads * head_dims
         if img_encoder_type == 'vit':
             self.feat_w = image_hw[1] // self.fnet_2d.patch_size
             self.feat_h = image_hw[0] // self.fnet_2d.patch_size
         else:
-            self.feat_w = image_hw[1] // 32
-            self.feat_h = image_hw[0] // 32
+            self.feat_w = image_hw[1] // self.fnet_2d.downsample_ratio
+            self.feat_h = image_hw[0] // self.fnet_2d.downsample_ratio
         if output_type == '1d':  # attention aggregation
             self.aggregation_kargv = {"embed_dim": self.embed_dim, "num_tokens": self.feat_h * self.feat_w}
         elif output_type == '2d':
@@ -503,18 +506,23 @@ class AttenFusionNet(Encoder):
         if use_coord:
             if use_harmonic:
                 self.harmonic_embedding = HarmonicEmbedding(**harmonic_args)
-                input_dim = embed_2d + self.harmonic_embedding.get_output_dim(input_dims=2)  # projected points are 2D vectors
+                q_input_dim = embed_2d + self.harmonic_embedding.get_output_dim(input_dims=2)  # projected points are 2D vectors
+                kv_input_dim = embed_3d + self.harmonic_embedding.get_output_dim(input_dims=2)  # projected points are 2D vectors
             else:
                 self.harmonic_embedding = nn.Identity()
-                input_dim = embed_2d + 2
+                q_input_dim = embed_2d + 2
+                kv_input_dim = embed_3d + 2
             img_coord_x, img_coord_y = coord_2d_mesh(self.feat_h, self.feat_w, normalize=True)  # (H*W, 2)
             img_coord_xy = torch.stack([img_coord_x.flatten(), img_coord_y.flatten()], dim=-1)  # (h*w, 2)
             self.img_uv_emb: torch.Tensor = self.harmonic_embedding(img_coord_xy)  # (H*W, D)
         else:
             self.harmonic_embedding = None
-            input_dim = embed_2d
+            q_input_dim = embed_2d
+            kv_input_dim = embed_3d
         self.cross_attnetion_type = attention_type
-        self.cross_attention_argv: AttentionArgv = dict(input_dim = input_dim, height=self.feat_h, width=self.feat_w, **attention_argv)  # height和width是为了兼容RoPE
+        self.cross_attention_argv: AttentionArgv = dict(q_input_dim = q_input_dim,
+                                                        kv_input_dim = kv_input_dim,
+                                                        height=self.feat_h, width=self.feat_w, **attention_argv)  # height和width是为了兼容RoPE
         self.use_mask = use_mask
         # self.use_pos_embed = use_pos_embed
         self.margin = margin
@@ -637,83 +645,9 @@ class AttenFusionNet(Encoder):
             raise NotImplementedError('Unknown type: {}, must be 1d or 2d'.format(self.output_type))
 
 
-class AttenDualFusionNet(Encoder):
-    def __init__(self,
-                # 2D image Encoder
-                image_hw: Tuple[int,int],
-                img_encoder_type: Literal['vit','resnet'],
-                img_encoder_args: Dict[str, str],
-                # 3D Encoder block
-                pointgpt_config: str,
-                pointgpt_checkpoint: str,
-                # Harmonic Function
-                use_coord: bool,
-                use_harmonic: bool,
-                harmonic_args: Dict,
-                # boundary mask
-                margin: float,
-                use_mask: bool,
-                # Cross Attention
-                attention_type: str,
-                attention_argv: Dict,
-                # Global Config
-                freeze_encoders: bool,
-                # type:
-                output_type: Literal['1d','2d']
-                ):
-        super().__init__()
-        if img_encoder_type == 'vit':
-            self.fnet_2d = ViTEncoder(**img_encoder_args, image_hw=image_hw, freeze=freeze_encoders, reshape=True)  # freeze parameters of fnet_2d
-        elif img_encoder_type == 'resnet':
-            self.fnet_2d = ResnetEncoder(**img_encoder_args, freeze=freeze_encoders)
-        else:
-            raise NotImplementedError("encoder type must be 'vit' or 'resnet'")
-        self.fnet_3d, self.fnet_3d_max_depth = load_pointgpt(pointgpt_config, pointgpt_checkpoint)
-        if freeze_encoders:
-            self.fnet_2d = FrozenModule(self.fnet_2d)
-            self.fnet_3d = FrozenModule(self.fnet_3d)
-        embed_2d = self.fnet_2d.get_output_dim()
-        embed_3d = self.fnet_3d.trans_dim
-        num_heads = attention_argv.get('heads')
-        head_dims = attention_argv.get('dim_head')
-        assert embed_2d == embed_3d, 'fnet2d output_dim ({}) != fnet3d output_dim ({})'.format(embed_2d, embed_3d)
-        assert embed_2d % num_heads == 0,'embedding ({}) % num_heads ({}) !=0'.format(embed_2d, num_heads)
-        self.embed_dim = num_heads * head_dims
-        if img_encoder_type == 'vit':
-            self.feat_w = image_hw[1] // self.fnet_2d.patch_size
-            self.feat_h = image_hw[0] // self.fnet_2d.patch_size
-        else:
-            self.feat_w = image_hw[1] // 32
-            self.feat_h = image_hw[0] // 32
-        if output_type == '1d':  # attention aggregation
-            self.aggregation_kargv = {"embed_dim": self.embed_dim, "num_tokens": self.feat_h * self.feat_w}
-        elif output_type == '2d':
-            self.aggregation_kargv = {"inplanes": self.embed_dim}
-        else:
-            raise NotImplementedError("output_type must be '1d' or '2d', got {}".format(output_type))
-        if use_coord:
-            if use_harmonic:
-                self.harmonic_embedding = HarmonicEmbedding(**harmonic_args)
-                input_dim = embed_2d + self.harmonic_embedding.get_output_dim(input_dims=2)  # projected points are 2D vectors
-            else:
-                self.harmonic_embedding = nn.Identity()
-                input_dim = embed_2d + 2
-            img_coord_x, img_coord_y = coord_2d_mesh(self.feat_h, self.feat_w, normalize=True)  # (H*W, 2)
-            img_coord_xy = torch.stack([img_coord_x.flatten(), img_coord_y.flatten()], dim=-1)  # (h*w, 2)
-            self.img_uv_emb: torch.Tensor = self.harmonic_embedding(img_coord_xy)  # (H*W, D)
-        else:
-            self.harmonic_embedding = None
-            input_dim = embed_2d
-        self.cross_attnetion_type = attention_type
-        self.cross_attention_argv: AttentionArgv = dict(input_dim = input_dim, height=self.feat_h, width=self.feat_w, **attention_argv)  # height和width是为了兼容RoPE
-        self.use_mask = use_mask
-        # self.use_pos_embed = use_pos_embed
-        self.margin = margin
-        # if use_pos_embed:
-        #     self.pos_embed = PositionEmbeddingCoordsSine2D(self.embed_dim, self.feat_h, self.feat_w, margin, pos_embed_temp)
-        #     self.pos_embed_patches = nn.Parameter(self.pos_embed.get_patched_coordinate_embedding(flatten=True).unsqueeze(0), requires_grad=False)  # (hw, N) -> (1, hw, N)
-        self.output_type = output_type
-        self.feat_buffer = dict()
+class AttenDualFusionNet(AttenFusionNet):
+    def __init__(self, **argv):
+        super().__init__(**argv)
 
     def _lazy_init(self):
         self.rot_cross_attention: __ATTENTION__ = __ATTENTION_TYPE__[self.cross_attnetion_type](**self.cross_attention_argv)  # additional head for coordinate attention (query: feat_2d, kv: feat_3d)
@@ -875,8 +809,8 @@ class PoolFusionNet(Encoder):
             self.feat_w = image_hw[1] // self.fnet_2d.patch_size
             self.feat_h = image_hw[0] // self.fnet_2d.patch_size
         else:
-            self.feat_w = image_hw[1] // 32
-            self.feat_h = image_hw[0] // 32
+            self.feat_w = image_hw[1] // self.fnet_2d.downsample_ratio
+            self.feat_h = image_hw[0] // self.fnet_2d.downsample_ratio
         if output_type == '1d':  # attention aggregation
             self.aggregation_kargv = {"embed_dim": embed_2d, "num_tokens": self.feat_h * self.feat_w}
         elif output_type == '2d':

@@ -1,7 +1,7 @@
 image_hw: [224, 448]
 img_encoder_type: vit
 img_encoder_args: !inc ./cfg/model/module/vit.yml
-pointgpt_checkpoint: pretrained/pretrain_kitti_tiny/PointGPT-S/kitti_tiny_fps/ckpt-last.pth
+pointgpt_checkpoint: pretrained/kitti_pointgpt_tiny.pth
 pointgpt_config: ./cfg/pointgpt/finetune_kitti_tiny.yaml
 use_coord: true
 use_harmonic: false

@@ -88,6 +88,11 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
     checkpoints_dir.mkdir(exist_ok=True)
     log_dir = experiment_dir.joinpath(path_argv['log'])
     log_dir.mkdir(exist_ok=True)
+    if isinstance(config['model']['args']['encoder_argv'], list):
+        encoder_argv = dict()
+        for argv in config['model']['args']['encoder_argv']:
+            encoder_argv.update(argv)
+        config['model']['args']['encoder_argv'] = encoder_argv
     yaml.safe_dump(config, open(str(log_dir.joinpath(os.path.basename(config_path))),'w'))
     np.random.seed(config['run']['seed'])
     torch.manual_seed(config['run']['seed'])
@@ -127,7 +132,6 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
     logger.addHandler(file_handler)
     logger.info('Training args')
     logger.info(args)
-    
     if path_argv['resume'] is not None:
         start_epoch, best_loss, _ = load_checkpoint(path_argv['resume'], model, optimizer, scheduler)
         logger.info("Loaded checkpoint from {}, Start from Epoch {}".format(path_argv['resume'], start_epoch))
@@ -207,7 +211,7 @@ def str2bool(s:str) -> bool:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_debug.yml")
-    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion.yml")
+    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion_harmonic_resnet.yml")
     parser.add_argument("--base_dir",type=str,default="kitti")
     parser.add_argument("--task_name",type=str,default="debug")
     parser.add_argument("--resume",type=str,default=None)

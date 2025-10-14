@@ -1,0 +1,5 @@
+img_encoder_type: vit
+img_encoder_args:
+  cache_dir: /home/bit/.cache/torch/hub/
+  modelname: dinov2_vits14
+  source: local

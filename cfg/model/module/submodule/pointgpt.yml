@@ -1,0 +1,2 @@
+pointgpt_checkpoint: pretrained/kitti_pointgpt_tiny.pth
+pointgpt_config: ./cfg/pointgpt/finetune_kitti_tiny.yaml
