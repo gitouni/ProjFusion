@@ -17,10 +17,10 @@ model:
   type: ProjDualFusion
   args:
     encoder_argv: 
-      - !inc cfg/model/module/attenfusion_harmonic_resnet.yml
+      - !inc cfg/model/module/attenfusion_harmonic.yml
       - !inc cfg/model/module/submodule/resnet.yml
       - !inc cfg/model/module/submodule/pointgpt.yml
-    aggregation_argv: !inc cfg/model/module/miniaggregation.yml
+    aggregation_argv: !inc cfg/model/module/aggregation/miniaggregation.yml
     mlp_argv:
       head_dims: [128, 128]
       activation_fn:

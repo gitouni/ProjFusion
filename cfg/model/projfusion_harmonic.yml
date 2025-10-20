@@ -16,8 +16,11 @@ loss: !inc ./cfg/model/module/loss.yml
 model:
   type: ProjFusion
   args:
-    encoder_argv: !inc cfg/model/module/attenfusion_harmonic.yml
-    aggregation_argv: !inc cfg/model/module/miniaggregation.yml
+    encoder_argv:
+      - !inc cfg/model/module/attenfusion_harmonic.yml
+      - !inc cfg/model/module/submodule/vit.yml
+      - !inc cfg/model/module/submodule/pointgpt.yml
+    aggregation_argv: !inc cfg/model/module/aggregation/miniaggregation.yml
     mlp_argv:
       head_dims: [128, 128]
       activation_fn:

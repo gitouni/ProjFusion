@@ -309,7 +309,7 @@ class Transformer(nn.Module):
             raise NotImplementedError("ffn_layer must be \"swiglu\" or \"mlp\"")
         for _ in range(depth):
             self.layers.append(nn.ModuleList([
-                Attention(inplanes, heads = heads, dim_head = dim_head, dropout = dropout),
+                Attention(inplanes, inplanes, heads = heads, dim_head = dim_head, dropout = dropout),
                 ffn_module_fn(),
             ]))
 

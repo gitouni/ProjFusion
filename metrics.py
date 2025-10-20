@@ -5,7 +5,7 @@ from scipy.spatial.transform import Rotation
 import argparse
 from typing import Tuple
 from models.util.transform import inv_pose_np
-from pprint import pprint
+# from pprint import pprint
 from collections import OrderedDict
 import json
 from pathlib import Path
@@ -18,9 +18,9 @@ def se3_err(pred_se3:np.ndarray, gt_se3:np.ndarray) -> Tuple[np.ndarray,np.ndarr
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pred_dir_root",type=str,default="experiments/kitti/projfusion_rope/results/projfusion_rope")
-    parser.add_argument("--gt_dir",type=str,default="cache/kitti_gt")
-    parser.add_argument("--log_file",type=str,default="log/kitti/projfusion_rope.json")
+    parser.add_argument("--pred_dir_root",type=str,default="experiments/nusc/projdualfusion_harmonic_iter8/results/projdualfusion_harmonic_iter8")
+    parser.add_argument("--gt_dir",type=str,default="cache/nuscenes_gt")
+    parser.add_argument("--log_file",type=str,default="log/nusc/projdualfusion_harmonic_iter8.json")
     return parser.parse_args()
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ model:
   type: ProjFusion
   args:
     encoder_argv: !inc cfg/model/module/atten_rope_fusion.yml
-    aggregation_argv: !inc cfg/model/module/miniaggregation.yml
+    aggregation_argv: !inc cfg/model/module/aggregation/miniaggregation.yml
     mlp_argv:
       head_dims: [128, 128]
       activation_fn:

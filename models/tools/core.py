@@ -535,6 +535,7 @@ class AttenFusionNet(Encoder):
     def _lazy_init(self):
         self.cross_attention: __ATTENTION__ = __ATTENTION_TYPE__[self.cross_attnetion_type](**self.cross_attention_argv)  # additional head for coordinate attention (query: feat_2d, kv: feat_3d)
         self.out_dim = self.cross_attention.out_dim
+        
     def kargv_for_aggregation(self) -> Dict:
         return self.aggregation_kargv
     
@@ -620,7 +621,7 @@ class AttenFusionNet(Encoder):
         else:
             valid_proj = (
                 (proj_uv[..., 0] >= margin_ratio[0]) & (proj_uv[..., 0] <= margin_ratio[1]) &
-                (proj_uv[..., 1] >= margin_ratio[0]) & (proj_uv[..., 1] <= margin_ratio[1]) & xyz_tf[..., 2, :] > 0  # only use depth > 0 points
+                (proj_uv[..., 1] >= margin_ratio[0]) & (proj_uv[..., 1] <= margin_ratio[1]) & (xyz_tf[..., 2, :] > 0)  # only use depth > 0 points
             )  # (B, N)
             attn_mask = valid_proj.unsqueeze(-2).expand(-1, self.feat_h * self.feat_w, -1).detach()  # (B, H*W, N)
         proj_uv.clamp_(*margin_ratio)  # (B, N, 2)
@@ -739,7 +740,7 @@ class AttenDualFusionNet(AttenFusionNet):
         else:
             valid_proj = (
                 (proj_uv[..., 0] >= margin_ratio[0]) & (proj_uv[..., 0] <= margin_ratio[1]) &
-                (proj_uv[..., 1] >= margin_ratio[0]) & (proj_uv[..., 1] <= margin_ratio[1]) & xyz_tf[..., 2, :] > 0  # only use depth > 0 points
+                (proj_uv[..., 1] >= margin_ratio[0]) & (proj_uv[..., 1] <= margin_ratio[1]) & (xyz_tf[..., 2, :] > 0)  # only use depth > 0 points
             )  # (B, N)
             attn_mask = valid_proj.unsqueeze(-2).expand(-1, self.feat_h * self.feat_w, -1).detach()  # (B, H*W, N)
         proj_uv.clamp_(*margin_ratio)  # (B, N, 2)

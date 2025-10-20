@@ -3,11 +3,11 @@ import os
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--src_dir",type=str,default="log/main")
-parser.add_argument("--method_list",type=str,nargs="+",default=['attn_3c_t_womask','attn_3c_t_wope','attn_3c_t'])
-parser.add_argument("--name_method_list",type=str,nargs="+",default=[r'CalibTRL w/o $mask$',r'CalibTRL w/o $pe$',r'CalibTRL'])
-parser.add_argument("--key_order",type=str,nargs="+",default=['Rx','Ry','Rz','R','tx','ty','tz','t','3d3c','5d5c'])
-parser.add_argument("--save_table",type=str,default="tmp_table_kitti.txt")
+parser.add_argument("--src_dir",type=str,default="log/nusc")
+parser.add_argument("--method_list",type=str,nargs="+",default=['calibnet','rggnet','lccnet','lccnet_mr5','lccraft','calibdepth','projdualfusion_harmonic','projdualfusion_harmonic_iter3','projfusion_harmonic','projdualfusion','projdualfusion_harmonic_f10','projdualfusion_harmonic_resnet'])
+parser.add_argument("--name_method_list",type=str,nargs="+",default=['CalibNet','RGGNet','LCCNet','LCCNet (mr5)','LCCRAFT','CalibDepth','AttenFusion','AttenFusion (\#iter=3)','AttenFusion (shared attention)','AttenFusion (w/o harmonic)','AttenFusion (harmonic n_func=10)','AttenFusion (resnet)'])
+parser.add_argument("--key_order",type=str,nargs="+",default=['Rx','Ry','Rz','RRMSE','tx','ty','tz','tRMSE','3d3c','5d5c'])
+parser.add_argument("--save_table",type=str,default="tmp_table_nusc.txt")
 args = parser.parse_args()
 with open(args.save_table,'w') as f:
     for j, (method, method_name) in enumerate(zip(args.method_list, args.name_method_list)):
@@ -15,6 +15,7 @@ with open(args.save_table,'w') as f:
         assert os.path.isfile(filename), "{} does not exist".format(filename)
         summary = json.load(open(filename,'r'))[-1]
         values = []
+        f.write("&")
         f.write(method_name)
         for key in args.key_order:
             value = summary[key]

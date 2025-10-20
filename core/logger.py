@@ -116,7 +116,7 @@ class LogTracker:
 
     def update(self, key, value, n=1):
         if key not in self._data.index:
-            self._data.loc[key] = [0, 0, 0]  # ensure the key exists
+            self._data.loc[key] = [0.0, 0, 0.0]  # ensure the key exists
         self._data.loc[key, 'total'] += value * n
         self._data.loc[key, 'counts'] += n
         if self._data.loc[key, 'counts'] > 0:

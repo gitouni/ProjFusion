@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import argparse
-from typing import List, Generator, Tuple, Dict, Iterable, Callable
+from typing import List, Union, Generator, Tuple, Dict, Iterable, Callable
+from collections import defaultdict
 from itertools import islice
 from dataset import __classdict__ as DatasetDict, DATASET_TYPE, PerturbDataset, BatchedPerturbDatasetOutput
 import yaml
@@ -17,6 +18,7 @@ import torch
 from torch.utils.data import DataLoader
 from core.logger import LogTracker, fmt_time
 from core.tools import load_checkpoint_model_only
+from core.tools import Timer
 from models.loss import se3_err, se3_reduce, se3_rmse, get_loss
 from models.util import se3
 from models.model import ProjFusion, ProjDualFusion
@@ -54,11 +56,11 @@ def to_npy(x0:torch.Tensor) -> np.ndarray:
     return x0.detach().cpu().numpy()
 
 @torch.inference_mode()
-def test_seq(model: ProjFusion, logger: Logger, loader: Generator[BatchedPerturbDatasetOutput, None, None], loss_fn: Callable[..., torch.Tensor],
-             seq_name: str, res_dir: Path, log_per_iter: int, device: torch.device, cnt: int=0):
+def test_seq(model: Union[ProjFusion, ProjDualFusion], logger: Logger, loader: Generator[BatchedPerturbDatasetOutput, None, None],
+             seq_name: str, res_dir: Path, log_per_iter: int, run_iter: int, device: torch.device, cnt: int=0):
     model.eval()
     progress = tqdm(loader, total=len(loader), desc=seq_name)
-    log_tracker = LogTracker('loss','rot_err','tsl_err','se3_err', phase='test')
+    log_tracker = LogTracker('rot_err','tsl_err','se3_err','time', phase='test')
     num_batches = len(loader)
     if isinstance(res_dir, Path):
         res_dir = res_dir
@@ -67,27 +69,31 @@ def test_seq(model: ProjFusion, logger: Logger, loader: Generator[BatchedPerturb
     for i, data in enumerate(islice(progress, cnt, None)):
         img = data['img'].to(device)
         pcd = data['pcd'].to(device)
+        batch_n = len(img)
         init_extran = data['init_extran'].to(device)
         gt_extran = data['gt_extran'].to(device)
         gt_delta_extran = data['pose_target'].to(device)
         gt_log = se3.log(gt_delta_extran)
         camera_info = data['camera_info']
-        rot_log, tsl_log = model(img, pcd, init_extran, camera_info)
-        pred_log = torch.cat([rot_log, tsl_log], dim=-1)
-        loss = loss_fn(pred_log, gt_log)
-        pred_extran = se3.exp(pred_log) @ init_extran
+        se3_xlist = [to_npy(se3.log(init_extran))]
+        pred_extran = init_extran
+        with Timer() as timer, model.cache_manager(img, pcd):  # use cache to accelerate iteration
+            for _ in range(run_iter):
+                rot_log, tsl_log = model(img, pcd, pred_extran, camera_info)
+                pred_log = torch.cat([rot_log, tsl_log], dim=-1)
+                pred_extran = se3.exp(pred_log) @ pred_extran
+                se3_xlist.append(to_npy(se3.log(pred_extran)))
+        log_tracker.update('time', timer.elapsed_time, batch_n)
         rot_err, tsl_err = se3_err(pred_extran, gt_extran)  # set the Tcl with the largest logits as the predicted one
         se3_loss = se3_reduce(rot_err, tsl_err)
-        se3_xlist = [to_npy(se3.log(init_extran)), to_npy(se3.log(pred_extran))]
         batched_x0_list = np.stack(se3_xlist, axis=1)  # (B, K, 6)
         for x0 in batched_x0_list:
             np.savetxt(res_dir.joinpath("%06d.txt"%cnt), x0)
             cnt += 1
         se3_loss = se3_reduce(rot_err, tsl_err)
-        log_tracker.update('loss', loss.item())
-        log_tracker.update('rot_err', se3_rmse(rot_err).mean().item())
-        log_tracker.update('tsl_err', se3_rmse(tsl_err).mean().item())
-        log_tracker.update('se3_err', se3_loss.mean().item())
+        log_tracker.update('rot_err', se3_rmse(rot_err).mean().item(), batch_n)
+        log_tracker.update('tsl_err', se3_rmse(tsl_err).mean().item(), batch_n)
+        log_tracker.update('se3_err', se3_loss.mean().item(), batch_n)
         if (i+1) % log_per_iter == 0 or i+1 == len(loader):
             logger.info("\tBatch {}|{} {}".format(i+1, num_batches, log_tracker.result()))
     return log_tracker.result()
@@ -110,7 +116,7 @@ def main(config:Dict, resume:bool):
     else:
         raise NotImplementedError(f"Unknown model type: {config['model']['type']}")
     model = MODEL_CLASS(**config['model']['args']).to(device)
-    loss_fn = get_loss(**config['loss'])
+    # loss_fn = get_loss(**config['loss'])
     # summary(model)
     # exit(0)
     experiment_dir = Path(path_argv['base_dir'])
@@ -134,7 +140,7 @@ def main(config:Dict, resume:bool):
         logger.info("Loaded checkpoint from {}".format(path_argv['pretrain']))
     else:
         raise FileNotFoundError("'pretrain' cannot be set to 'None' during test-time")
-    record_list = []
+    record_list: List[Tuple[str, Dict[str, float]]] = []
     res_dir = experiment_dir.joinpath(path_argv['results']).joinpath(path_argv['name'])
     res_dir.mkdir(exist_ok=True, parents=True)
     for name, dataloader in zip(name_list, dataloader_list):
@@ -149,18 +155,29 @@ def main(config:Dict, resume:bool):
                 shutil.rmtree(str(sub_res_dir))
                 sub_res_dir.mkdir()
                 cnt = 0   
-        record = test_seq(model, logger, dataloader, loss_fn, name, sub_res_dir, 
-            run_argv['log_per_iter'], device, cnt)
+        record = test_seq(model, logger, dataloader, name, sub_res_dir, 
+            run_argv['log_per_iter'], run_argv['run_iter'], device, cnt)
         logger.info("{}: {}".format(name, record))
         record_list.append([name, record])
+    total_record = defaultdict(float)
     logger.info("Summary:")  # view in the bottom
     for name, record in record_list:
         logger.info("{}: {}".format(name, record))
+        for key, value in record.items():
+            total_record[key] += value
+    for key, value in total_record.items():
+        total_record[key] = value / len(record_list)
+    logger.info("total: {}".format(total_record))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_resnet/log/projdualfusion_harmonic_resnet.yml")
+    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic/log/projdualfusion_harmonic.yml")
+    parser.add_argument("--run_iter", type=int, default=1)
+    parser.add_argument("--name", default=None)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     config: Dict  = yaml.load(open(args.config,'r'), yaml.SafeLoader)
+    config['run']['run_iter'] = args.run_iter
+    if args.name:
+        config['path']['name'] = args.name
     main(config, args.resume)

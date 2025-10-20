@@ -77,16 +77,18 @@ class MiniResAggregation(nn.Module):
 
 
 class AttentionAggregation(nn.Module):
-    def __init__(self, embed_dim:int,
-            num_tokens:int,
-            depth:int,
-            n_head:int,
-            dim_head:int,
-            feedforward_ratio:float,
-            dropout:float=0.,
-            activation_fn: Callable[..., nn.Module]=lambda: nn.ReLU(inplace=True),
-            ffn_layer:Literal['swiglu','mlp']='mlp'):
+    def __init__(self, embed_dim: int,
+            num_tokens: int,
+            depth: int,
+            n_head: int,
+            dim_head: int,
+            feedforward_ratio: float,
+            dropout: float = 0.,
+            activation_fn: Callable[..., nn.Module] = lambda: nn.ReLU(inplace=True),
+            ffn_layer: Literal['swiglu','mlp']='mlp'):
         super().__init__()
+        self.pos_emb = nn.Parameter(torch.empty(1, num_tokens + 1, embed_dim))
+        nn.init.trunc_normal_(self.pos_emb, 0, 0.02)
         self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dim))
         feedforward_dim = int(feedforward_ratio * embed_dim)
         self.transformer = Transformer(embed_dim, depth, n_head, dim_head, feedforward_dim, dropout, activation_fn, ffn_layer)
@@ -98,6 +100,7 @@ class AttentionAggregation(nn.Module):
         B = x.shape[0]
         cls_tokens = self.cls_token.expand(B, -1, -1)  # (1, 1, D) -> (B, 1, D)
         x = torch.cat((cls_tokens, x), dim=1)  # (B, 1, D), (B, N, D) -> (B, N+1, D)
+        x += self.pos_emb  # (B, N+1, D), (1, N+1, D) -> (B, N+1, D)
         x = self.transformer(x)  # (B, N+1, D)  -> (B, N+1, D)
         x = self.mlp_head(x[:, 0])  # (B, N+1, D) -> (B, D), only retrieve cls_token
         x = self.act(x)
