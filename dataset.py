@@ -759,7 +759,7 @@ class PerturbDataset(Dataset):
             init_extran = extran.clone()
             init_extran[:3, :3] = igt[:3, :3] @ extran[:3, :3]
             init_extran[:3, 3] = igt[:3, 3] + extran[:3, 3]
-            # disentangle transformation
+            # disentangle transformation, save seperately
             gt = torch.eye(4)
             gt[:3, :3] = igt[:3, :3].T
             gt[:3, 3] = -igt[:3, 3]
