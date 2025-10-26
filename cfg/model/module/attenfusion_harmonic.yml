@@ -7,4 +7,4 @@ use_mask: false
 attention_type: Attention
 attention_argv: !inc ./cfg/model/module/submodule/attention.yml
 freeze_encoders: true
-output_type: 1d
+output_type: 2d
