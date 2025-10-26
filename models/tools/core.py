@@ -673,9 +673,9 @@ class AttenDualFusionNet(AttenFusionNet):
         feat_2d = self.fnet_2d(img)  # (B, C, H, W)
         xyz, feat_3d = self.fnet_3d.extraction(pcd / self.fnet_3d_max_depth)  # (B, M, 3), (B, M, D)
         feat_2d = rearrange(feat_2d, 'b c n h -> b (n h) c')  # (B, H*W, C)
-        return dict(feat_2d=feat_2d,  # (B, N, C)
-                    feat_3d=feat_3d,  # (B, M, D)
-                    xyz=xyz)  # (B, M, 3)
+        return dict(feat_2d=feat_2d.detach(),  # (B, N, C)
+                    feat_3d=feat_3d.detach(),  # (B, M, D)
+                    xyz=xyz.detach())  # (B, M, 3)
     
     def get_buffers(self) -> StateCache:
         return self.feat_buffer

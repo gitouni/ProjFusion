@@ -15,7 +15,7 @@ def xavier_init_mlp(m:nn.Module):
 
 class ProjFusion(nn.Module):
     # class for Energy-based Embedding
-    def __init__(self, encoder_argv: Dict,  aggregation_argv: Dict, mlp_argv: Dict, disentangle: bool = False) -> None:
+    def __init__(self, encoder_argv: Dict,  aggregation_argv: Dict, mlp_argv: Dict) -> None:
         super().__init__()
         self.encoder = AttenFusionNet(**encoder_argv)
         getattr(self.encoder, '_lazy_init', lambda: None)()  # 调用函数的延迟初始化方法
@@ -29,7 +29,7 @@ class ProjFusion(nn.Module):
             mlp_argv['activation_fn'] = get_activation_func(**mlp_argv['activation_fn'])
         self.aggregation_argv = aggregation_argv
         self.mlp_argv = mlp_argv
-        self.register_buffer('disentangle', torch.zeros((), dtype=torch.bool), persistent=True)
+
         
 
     def _lazy_init(self):

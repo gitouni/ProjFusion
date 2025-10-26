@@ -18,8 +18,8 @@ dataset:
           <<: *dataset_common_args
           pcd_sample_num: &train_sample_num 8192
         main: &train_main
-          max_deg: &max_deg 15
-          max_tran: &max_tran 0.15
+          max_deg: &max_deg 20
+          max_tran: &max_tran 1.0
           min_deg: &min_deg 0.0
           min_tran: &min_tran 0.0
           mag_randomly: true
