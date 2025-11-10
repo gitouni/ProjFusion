@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial import KDTree
-from typing import Tuple, Iterable, List, Dict
+from typing import Tuple, Iterable, List, Dict, Optional
 from scipy.spatial.transform import Rotation
 import open3d as o3d
 from scipy.spatial import KDTree, cKDTree
@@ -127,7 +127,7 @@ def nptran(pcd:np.ndarray, rigdtran:np.ndarray) -> np.ndarray:
     pcd_ = rigdtran[:3, :3] @ pcd_ + rigdtran[:3, [3]]
     return pcd_.T
 
-def npproj(pcd:np.ndarray, extran:np.ndarray, intran:np.ndarray, img_shape:tuple, return_depth=False):
+def npproj(pcd:np.ndarray, extran:np.ndarray, intran:np.ndarray, img_shape:tuple, return_depth=False, boundary: Optional[Tuple[float, float ,float, float]]=None):
     """_summary_
 
     Args:
@@ -140,6 +140,8 @@ def npproj(pcd:np.ndarray, extran:np.ndarray, intran:np.ndarray, img_shape:tuple
         _type_: uv (N,2), rev (N,), [depth]
     """
     H, W = img_shape[0], img_shape[1]
+    if boundary is None:
+        boundary = (0, W-1, 0, H-1)
     pcd_ = nptran(pcd, extran)  # (N, 3)
     if intran.shape[1] == 4:
         proj_pcd = intran @ np.concatenate([pcd_, np.ones([pcd_.shape[0],1])],axis=1).T
@@ -151,7 +153,7 @@ def npproj(pcd:np.ndarray, extran:np.ndarray, intran:np.ndarray, img_shape:tuple
     raw_index = raw_index[rev]
     u = u[rev]/w[rev]
     v = v[rev]/w[rev]
-    rev2 = (0<=u) * (u<W-1) * (0<=v) * (v<H-1)
+    rev2 = (boundary[0] <= u) * (u < boundary[1]) * (boundary[2] <= v) * (v < boundary[3])
     proj_pts = np.stack((u[rev2],v[rev2]),axis=1)
     if return_depth:
         return proj_pts, raw_index[rev2], pcd_[rev][rev2, 2]

@@ -115,7 +115,9 @@ def main(config:Dict, resume:bool):
         MODEL_CLASS = ProjFusion
     else:
         raise NotImplementedError(f"Unknown model type: {config['model']['type']}")
-    model = MODEL_CLASS(**config['model']['args']).to(device)
+    model = MODEL_CLASS(**config['model']['args'])
+    getattr(model, '_lazy_init', lambda: None)()  # 调用函数的延迟初始化方法
+    model = model.to(device)
     # loss_fn = get_loss(**config['loss'])
     # summary(model)
     # exit(0)
@@ -171,7 +173,7 @@ def main(config:Dict, resume:bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic/log/projdualfusion_harmonic.yml")
+    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_lerr/log/projdualfusion_harmonic.yml")
     parser.add_argument("--run_iter", type=int, default=1)
     parser.add_argument("--name", default=None)
     parser.add_argument("--resume", action="store_true")

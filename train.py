@@ -113,6 +113,7 @@ def main(config:Dict, config_path:Union[str, Iterable[str]]):
     else:
         raise NotImplementedError(f"Unknown model type: {config['model']['type']}")
     model = MODEL_CLASS(**config['model']['args']).to(device)
+    getattr(model, '_lazy_init', lambda: None)()  # 调用函数的延迟初始化方法
     optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), config['optimizer']['type'], **config['optimizer']['args'])
     clip_grad = config['optimizer']['max_grad']
     scheduler = get_lr_scheduler(optimizer, config['scheduler']['type'], **config['scheduler']['args'])
@@ -210,8 +211,8 @@ def str2bool(s:str) -> bool:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_debug.yml")
-    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion_harmonic_mask.yml")
+    parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_r5_t0.5.yml")
+    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion_harmonic.yml")
     parser.add_argument("--base_dir",type=str,default="kitti")
     parser.add_argument("--task_name",type=str,default="debug")
     parser.add_argument("--resume",type=str,default=None)

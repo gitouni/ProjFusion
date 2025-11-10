@@ -60,7 +60,7 @@ dataset:
           pcd_sample_num: &test_sample_num 8192
         main:
           <<: *test_main
-          file: cache/kitti_large/test_13.txt
+          file: cache/kitti_r15_t0.15/test_13.txt
       - name: seq_14
         base:
           seqs: ['14']
@@ -68,7 +68,7 @@ dataset:
           pcd_sample_num: *test_sample_num
         main:
           <<: *test_main
-          file: cache/kitti_large/test_14.txt
+          file: cache/kitti_r15_t0.15/test_14.txt
       - name: seq_15
         base:
           seqs: ['15']
@@ -76,7 +76,7 @@ dataset:
           pcd_sample_num: *test_sample_num
         main:
           <<: *test_main
-          file: cache/kitti_large/test_15.txt
+          file: cache/kitti_r15_t0.15/test_15.txt
       - name: seq_16
         base:
           seqs: ['16']
@@ -84,7 +84,7 @@ dataset:
           pcd_sample_num: *test_sample_num
         main:
           <<: *test_main
-          file: cache/kitti_large/test_16.txt
+          file: cache/kitti_r15_t0.15/test_16.txt
       - name: seq_18
         base:
           seqs: ['18']
@@ -92,7 +92,7 @@ dataset:
           pcd_sample_num: *test_sample_num
         main:
           <<: *test_main
-          file: cache/kitti_large/test_18.txt
+          file: cache/kitti_r15_t0.15/test_18.txt
     dataloader:
       batch_size: 16
       shuffle: false
@@ -109,11 +109,11 @@ dataset:
       main:
         <<: *test_main
         file:
-          - cache/kitti_large/test_13.txt
-          - cache/kitti_large/test_14.txt
-          - cache/kitti_large/test_15.txt
-          - cache/kitti_large/test_16.txt
-          - cache/kitti_large/test_18.txt
+          - cache/kitti_r15_t0.15/test_13.txt
+          - cache/kitti_r15_t0.15/test_14.txt
+          - cache/kitti_r15_t0.15/test_15.txt
+          - cache/kitti_r15_t0.15/test_16.txt
+          - cache/kitti_r15_t0.15/test_18.txt
     dataloader:
       batch_size: 1
       shuffle: false

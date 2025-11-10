@@ -1,0 +1,5 @@
+max_deg: 10
+max_tran: 0.25
+min_deg: 0.0
+min_tran: 0.0
+mag_randomly: true

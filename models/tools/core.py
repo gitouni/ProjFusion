@@ -1,12 +1,11 @@
 from typing import Literal, List, Dict, Tuple, Union, TypedDict, Optional, Callable
 from functools import partial
 from abc import abstractmethod
-from copy import deepcopy
 
 import torch
 import torch.nn as nn
 import numpy as np
-from einops import rearrange, repeat
+from einops import rearrange
 from torchvision.models import (ResNet, resnet18, resnet34, resnet50, resnet101, resnet152,
                 ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights)
 # from torch.nn import functional as F
@@ -613,7 +612,7 @@ class AttenFusionNet(Encoder):
         proj_uv.transpose_(-1, -2).contiguous()  # (B, 2, N) -> (B, N, 2)
         # Normalize and clamp projection coordinates
         margin_ratio = [-1 - self.margin, 1 + self.margin]
-        proj_uv[..., 0] = normalize_grid(proj_uv[..., 0], feat_w)  # (B, N)
+        proj_uv[..., 0] = normalize_grid(proj_uv[..., 0], feat_w)  # (B, N)  normalized to [-1, 1]
         proj_uv[..., 1] = normalize_grid(proj_uv[..., 1], feat_h)  # (B, N)
         # Build attention mask if needed
         if not self.use_mask:

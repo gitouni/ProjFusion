@@ -6,7 +6,7 @@ import argparse
 from typing import Tuple
 from models.util.transform import inv_pose_np
 # from pprint import pprint
-from collections import OrderedDict
+from collections import defaultdict
 import json
 from pathlib import Path
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     pred_dirs = sorted(os.listdir(args.pred_dir_root))
     assert len(gt_files) == len(pred_dirs), "number of gt files ({}) != number of pred subdirs ({})".format(len(gt_files), len(pred_dirs))
     names = pred_dirs
-    metrics = OrderedDict({"Rx":[], "Ry":[], "Rz":[], "tx":[], "ty":[], "tz":[],"RRMSE":[],"tRMSE":[],'RMAE':[],'tMAE':[],"3d3c":[],"5d5c":[]})
+    metrics = defaultdict(list)
     print("Compute metrics on {}".format(names))
     metric_list = []
     log_path = os.path.dirname(args.log_file)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             R_err_i, t_err_i = se3_err(toMatw(pred_se3_i), gt_se3)
             R_err[i, :] = R_err_i
             t_err[i, :] = t_err_i
-        dir_metric = OrderedDict(name=name)
+        dir_metric = defaultdict(list)
         dir_metric['Rx'] = np.mean(R_err[:,0])
         dir_metric['Ry'] = np.mean(R_err[:,1])
         dir_metric['Rz'] = np.mean(R_err[:,2])
@@ -64,11 +64,14 @@ if __name__ == "__main__":
         dir_metric['tRMSE'] = np.mean(t_rmse)
         dir_metric['RMAE'] = np.mean(r_mae)
         dir_metric['tMAE'] = np.mean(t_mae)
+        dir_metric['1d2.5c'] = np.sum(np.logical_and(R_rmse < 1, t_rmse < 0.025)) / len(R_rmse)
+        dir_metric['2d5c'] = np.sum(np.logical_and(R_rmse < 2, t_rmse < 0.05)) / len(R_rmse)
         dir_metric['3d3c'] = np.sum(np.logical_and(R_rmse < 3, t_rmse < 0.03)) / len(R_rmse)
         dir_metric['5d5c'] = np.sum(np.logical_and(R_rmse < 5, t_rmse < 0.05)) / len(R_rmse)
         metric_list.append(dir_metric)
-        for metric in metrics.keys():
+        for metric in dir_metric.keys():
             metrics[metric].append(dir_metric[metric])
+    # average
     for metric in metrics.keys():
         metrics[metric] = sum(metrics[metric]) / len(metrics[metric])
     metric_list.append(metrics)

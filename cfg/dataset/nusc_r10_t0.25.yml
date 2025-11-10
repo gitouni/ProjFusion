@@ -1,0 +1,240 @@
+dataset:
+  type: nuscenes
+  common_args: &dataset_common_args
+    dataroot: data/nuscenes/
+    daylight: false
+    cam_sensor_name: CAM_FRONT # choose from ['CAM_FRONT','CAM_FRONT_RIGHT','CAM_BACK_RIGHT','CAM_BACK','CAM_BACK_LEFT','CAM_FRONT_LEFT']
+    point_sensor_name: LIDAR_TOP
+    skip_point: 1
+    voxel_size: null
+    min_dist: 0.1
+    resize_size: [224, 448]
+    extend_ratio: [2.5, 2.5]
+  
+  train:
+    dataset:
+      train:
+        base:
+          version: v1.0-trainval
+          scene_names: cache/nuscenes_split/train.txt
+          <<: *dataset_common_args
+          pcd_sample_num: 8192
+        main: &train_main
+          max_deg: 10
+          max_tran: 0.25
+          min_deg: 0.0
+          min_tran: 0.0
+          mag_randomly: true
+      val:
+        base:
+          version: v1.0-trainval
+          scene_names: cache/nuscenes_split/val.txt
+          <<: *dataset_common_args
+          pcd_sample_num: 8192
+        main:
+          <<: *train_main
+    dataloader:
+      common_args: &dataloader_common_args
+        num_workers: 4
+        pin_memory: true
+      args:
+        batch_sampler:
+          dataset_len: 1024
+          num_samples: 16
+        <<: *dataloader_common_args
+      val_args:
+        batch_size: 16
+        shuffle: false
+        <<: *dataloader_common_args
+  test:
+    common_main: &test_common_main
+      max_deg: 10
+      max_tran: 0.25
+      min_deg: 0.0
+      min_tran: 0.0
+      mag_randomly: true
+    dataset:
+      name: nuscenes
+      base:
+        version: v1.0-test
+        scene_names: null
+        <<: *dataset_common_args
+        pcd_sample_num: 8192
+      main:
+        <<: *test_common_main
+        file: cache/nuscenes_r10_t0.25/{name}.txt
+
+    dataloader:
+      batch_size: 16
+      shuffle: false
+      drop_last: false
+      pin_memory: true
+      num_workers: 4
+
+  test_time:
+    dataset:
+      base:
+        version: v1.0-test
+        scene_names: null
+        <<: *dataset_common_args
+        pcd_sample_num: 20000
+      main:
+        <<: *test_common_main
+        file:
+          - cache/nuscenes_r10_t0.25/scene-0077.txt
+          - cache/nuscenes_r10_t0.25/scene-0078.txt
+          - cache/nuscenes_r10_t0.25/scene-0079.txt
+          - cache/nuscenes_r10_t0.25/scene-0080.txt
+          - cache/nuscenes_r10_t0.25/scene-0081.txt
+          - cache/nuscenes_r10_t0.25/scene-0082.txt
+          - cache/nuscenes_r10_t0.25/scene-0083.txt
+          - cache/nuscenes_r10_t0.25/scene-0084.txt
+          - cache/nuscenes_r10_t0.25/scene-0085.txt
+          - cache/nuscenes_r10_t0.25/scene-0086.txt
+          - cache/nuscenes_r10_t0.25/scene-0087.txt
+          - cache/nuscenes_r10_t0.25/scene-0088.txt
+          - cache/nuscenes_r10_t0.25/scene-0089.txt
+          - cache/nuscenes_r10_t0.25/scene-0090.txt
+          - cache/nuscenes_r10_t0.25/scene-0091.txt
+          - cache/nuscenes_r10_t0.25/scene-0111.txt
+          - cache/nuscenes_r10_t0.25/scene-0112.txt
+          - cache/nuscenes_r10_t0.25/scene-0113.txt
+          - cache/nuscenes_r10_t0.25/scene-0114.txt
+          - cache/nuscenes_r10_t0.25/scene-0115.txt
+          - cache/nuscenes_r10_t0.25/scene-0116.txt
+          - cache/nuscenes_r10_t0.25/scene-0117.txt
+          - cache/nuscenes_r10_t0.25/scene-0118.txt
+          - cache/nuscenes_r10_t0.25/scene-0119.txt
+          - cache/nuscenes_r10_t0.25/scene-0140.txt
+          - cache/nuscenes_r10_t0.25/scene-0142.txt
+          - cache/nuscenes_r10_t0.25/scene-0143.txt
+          - cache/nuscenes_r10_t0.25/scene-0144.txt
+          - cache/nuscenes_r10_t0.25/scene-0145.txt
+          - cache/nuscenes_r10_t0.25/scene-0146.txt
+          - cache/nuscenes_r10_t0.25/scene-0147.txt
+          - cache/nuscenes_r10_t0.25/scene-0148.txt
+          - cache/nuscenes_r10_t0.25/scene-0265.txt
+          - cache/nuscenes_r10_t0.25/scene-0266.txt
+          - cache/nuscenes_r10_t0.25/scene-0279.txt
+          - cache/nuscenes_r10_t0.25/scene-0280.txt
+          - cache/nuscenes_r10_t0.25/scene-0281.txt
+          - cache/nuscenes_r10_t0.25/scene-0282.txt
+          - cache/nuscenes_r10_t0.25/scene-0307.txt
+          - cache/nuscenes_r10_t0.25/scene-0308.txt
+          - cache/nuscenes_r10_t0.25/scene-0309.txt
+          - cache/nuscenes_r10_t0.25/scene-0310.txt
+          - cache/nuscenes_r10_t0.25/scene-0311.txt
+          - cache/nuscenes_r10_t0.25/scene-0312.txt
+          - cache/nuscenes_r10_t0.25/scene-0313.txt
+          - cache/nuscenes_r10_t0.25/scene-0314.txt
+          - cache/nuscenes_r10_t0.25/scene-0333.txt
+          - cache/nuscenes_r10_t0.25/scene-0334.txt
+          - cache/nuscenes_r10_t0.25/scene-0335.txt
+          - cache/nuscenes_r10_t0.25/scene-0336.txt
+          - cache/nuscenes_r10_t0.25/scene-0337.txt
+          - cache/nuscenes_r10_t0.25/scene-0338.txt
+          - cache/nuscenes_r10_t0.25/scene-0339.txt
+          - cache/nuscenes_r10_t0.25/scene-0340.txt
+          - cache/nuscenes_r10_t0.25/scene-0341.txt
+          - cache/nuscenes_r10_t0.25/scene-0342.txt
+          - cache/nuscenes_r10_t0.25/scene-0343.txt
+          - cache/nuscenes_r10_t0.25/scene-0481.txt
+          - cache/nuscenes_r10_t0.25/scene-0482.txt
+          - cache/nuscenes_r10_t0.25/scene-0483.txt
+          - cache/nuscenes_r10_t0.25/scene-0484.txt
+          - cache/nuscenes_r10_t0.25/scene-0485.txt
+          - cache/nuscenes_r10_t0.25/scene-0486.txt
+          - cache/nuscenes_r10_t0.25/scene-0487.txt
+          - cache/nuscenes_r10_t0.25/scene-0488.txt
+          - cache/nuscenes_r10_t0.25/scene-0489.txt
+          - cache/nuscenes_r10_t0.25/scene-0490.txt
+          - cache/nuscenes_r10_t0.25/scene-0491.txt
+          - cache/nuscenes_r10_t0.25/scene-0492.txt
+          - cache/nuscenes_r10_t0.25/scene-0493.txt
+          - cache/nuscenes_r10_t0.25/scene-0494.txt
+          - cache/nuscenes_r10_t0.25/scene-0495.txt
+          - cache/nuscenes_r10_t0.25/scene-0496.txt
+          - cache/nuscenes_r10_t0.25/scene-0497.txt
+          - cache/nuscenes_r10_t0.25/scene-0498.txt
+          - cache/nuscenes_r10_t0.25/scene-0547.txt
+          - cache/nuscenes_r10_t0.25/scene-0548.txt
+          - cache/nuscenes_r10_t0.25/scene-0549.txt
+          - cache/nuscenes_r10_t0.25/scene-0550.txt
+          - cache/nuscenes_r10_t0.25/scene-0551.txt
+          - cache/nuscenes_r10_t0.25/scene-0601.txt
+          - cache/nuscenes_r10_t0.25/scene-0602.txt
+          - cache/nuscenes_r10_t0.25/scene-0603.txt
+          - cache/nuscenes_r10_t0.25/scene-0604.txt
+          - cache/nuscenes_r10_t0.25/scene-0606.txt
+          - cache/nuscenes_r10_t0.25/scene-0607.txt
+          - cache/nuscenes_r10_t0.25/scene-0608.txt
+          - cache/nuscenes_r10_t0.25/scene-0609.txt
+          - cache/nuscenes_r10_t0.25/scene-0610.txt
+          - cache/nuscenes_r10_t0.25/scene-0611.txt
+          - cache/nuscenes_r10_t0.25/scene-0612.txt
+          - cache/nuscenes_r10_t0.25/scene-0613.txt
+          - cache/nuscenes_r10_t0.25/scene-0614.txt
+          - cache/nuscenes_r10_t0.25/scene-0615.txt
+          - cache/nuscenes_r10_t0.25/scene-0616.txt
+          - cache/nuscenes_r10_t0.25/scene-0617.txt
+          - cache/nuscenes_r10_t0.25/scene-0618.txt
+          - cache/nuscenes_r10_t0.25/scene-0619.txt
+          - cache/nuscenes_r10_t0.25/scene-0620.txt
+          - cache/nuscenes_r10_t0.25/scene-0621.txt
+          - cache/nuscenes_r10_t0.25/scene-0622.txt
+          - cache/nuscenes_r10_t0.25/scene-0623.txt
+          - cache/nuscenes_r10_t0.25/scene-0624.txt
+          - cache/nuscenes_r10_t0.25/scene-0827.txt
+          - cache/nuscenes_r10_t0.25/scene-0828.txt
+          - cache/nuscenes_r10_t0.25/scene-0829.txt
+          - cache/nuscenes_r10_t0.25/scene-0830.txt
+          - cache/nuscenes_r10_t0.25/scene-0831.txt
+          - cache/nuscenes_r10_t0.25/scene-0833.txt
+          - cache/nuscenes_r10_t0.25/scene-0834.txt
+          - cache/nuscenes_r10_t0.25/scene-0835.txt
+          - cache/nuscenes_r10_t0.25/scene-0836.txt
+          - cache/nuscenes_r10_t0.25/scene-0837.txt
+          - cache/nuscenes_r10_t0.25/scene-0838.txt
+          - cache/nuscenes_r10_t0.25/scene-0839.txt
+          - cache/nuscenes_r10_t0.25/scene-0840.txt
+          - cache/nuscenes_r10_t0.25/scene-0841.txt
+          - cache/nuscenes_r10_t0.25/scene-0842.txt
+          - cache/nuscenes_r10_t0.25/scene-0844.txt
+          - cache/nuscenes_r10_t0.25/scene-0845.txt
+          - cache/nuscenes_r10_t0.25/scene-0846.txt
+          - cache/nuscenes_r10_t0.25/scene-0932.txt
+          - cache/nuscenes_r10_t0.25/scene-0933.txt
+          - cache/nuscenes_r10_t0.25/scene-0935.txt
+          - cache/nuscenes_r10_t0.25/scene-0936.txt
+          - cache/nuscenes_r10_t0.25/scene-0937.txt
+          - cache/nuscenes_r10_t0.25/scene-0938.txt
+          - cache/nuscenes_r10_t0.25/scene-0939.txt
+          - cache/nuscenes_r10_t0.25/scene-0940.txt
+          - cache/nuscenes_r10_t0.25/scene-0941.txt
+          - cache/nuscenes_r10_t0.25/scene-0942.txt
+          - cache/nuscenes_r10_t0.25/scene-0943.txt
+          - cache/nuscenes_r10_t0.25/scene-1026.txt
+          - cache/nuscenes_r10_t0.25/scene-1027.txt
+          - cache/nuscenes_r10_t0.25/scene-1028.txt
+          - cache/nuscenes_r10_t0.25/scene-1029.txt
+          - cache/nuscenes_r10_t0.25/scene-1030.txt
+          - cache/nuscenes_r10_t0.25/scene-1031.txt
+          - cache/nuscenes_r10_t0.25/scene-1032.txt
+          - cache/nuscenes_r10_t0.25/scene-1033.txt
+          - cache/nuscenes_r10_t0.25/scene-1034.txt
+          - cache/nuscenes_r10_t0.25/scene-1035.txt
+          - cache/nuscenes_r10_t0.25/scene-1036.txt
+          - cache/nuscenes_r10_t0.25/scene-1037.txt
+          - cache/nuscenes_r10_t0.25/scene-1038.txt
+          - cache/nuscenes_r10_t0.25/scene-1039.txt
+          - cache/nuscenes_r10_t0.25/scene-1040.txt
+          - cache/nuscenes_r10_t0.25/scene-1041.txt
+          - cache/nuscenes_r10_t0.25/scene-1042.txt
+          - cache/nuscenes_r10_t0.25/scene-1043.txt
+    dataloader:
+      batch_size: 1
+      shuffle: false
+      drop_last: false
+      pin_memory: true
+      num_workers: 0
+

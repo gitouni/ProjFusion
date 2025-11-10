@@ -1,0 +1,28 @@
+path:
+  name: wosoid
+  base_dir: experiments/{base_dir}/
+  log: log
+  results: results
+  rewards: rewards
+  checkpoint: checkpoint
+  resume: null
+  resume_eval_first: false
+  pretrain: experiments/{base_dir}/{task_name}/checkpoint/best_model.pth
+
+optimizer: !inc ./cfg/model/module/adamw.yml
+scheduler: !inc ./cfg/model/module/cosine-warmup.yml
+run: !inc ./cfg/model/module/run.yml
+loss: !inc ./cfg/model/module/loss.yml
+model:
+  type: ProjDualFusion
+  args:
+    encoder_argv:
+      - !inc cfg/model/module/attenfusion_harmonic_f2.yml
+      - !inc cfg/model/module/submodule/vit.yml
+      - !inc cfg/model/module/submodule/pointgpt.yml
+    aggregation_argv: !inc cfg/model/module/aggregation/miniaggregation.yml
+    mlp_argv:
+      head_dims: [128, 128]
+      activation_fn:
+        activation: silu
+        inplace: true

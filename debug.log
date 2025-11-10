@@ -1,0 +1,153 @@
+python train.py '--dataset_config' cfg/dataset/kitti_r15_t0.15.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_r15_t0.15
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.25.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_r10_t0.25
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_r10_t0.5
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/nusc_r15_t0.15.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' nusc '--task_name' projdualfusion_harmonic_r15_t0.15
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.852 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 2.0 seconds.
+======
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.552 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 1.9 seconds.
+======
+python train.py '--dataset_config' cfg/dataset/nusc_r10_t0.25.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' nusc '--task_name' projdualfusion_harmonic_r10_t0.25
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.827 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 2.0 seconds.
+======
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.558 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 1.9 seconds.
+======
+python train.py '--dataset_config' cfg/dataset/nusc_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' nusc '--task_name' projdualfusion_harmonic_r10_t0.5
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.702 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 1.8 seconds.
+======
+======
+Loading NuScenes tables for version v1.0-trainval...
+23 category,
+8 attribute,
+4 visibility,
+64386 instance,
+12 sensor,
+10200 calibrated_sensor,
+68 log,
+850 scene,
+34149 sample,
+2631083 sample_data,
+4 map,
+Done loading in 4.626 seconds.
+======
+Reverse indexing ...
+Done reverse indexing in 1.9 seconds.
+======
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic_resnet.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_resnet_r10_t0.5
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion.yml '--base_dir' kitti '--task_name' projdualfusion_r10_t0.5
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic_f2.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_f2_r10_t0.5
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.
+python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic_f10.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_f10_r10_t0.5
+Ground truth poses are not avaialble for sequence 12.
+Ground truth poses are not avaialble for sequence 21.
+Ground truth poses are not avaialble for sequence 11.
+Ground truth poses are not avaialble for sequence 17.
+Ground truth poses are not avaialble for sequence 20.

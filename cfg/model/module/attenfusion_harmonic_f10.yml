@@ -1,0 +1,10 @@
+image_hw: [224, 448]
+use_coord: true
+use_harmonic: true
+harmonic_args: !inc ./cfg/model/module/submodule/harmonic_f10.yml
+margin: 2.0
+use_mask: false
+attention_type: Attention
+attention_argv: !inc ./cfg/model/module/submodule/attention.yml
+freeze_encoders: true
+output_type: 2d

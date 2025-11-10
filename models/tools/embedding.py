@@ -206,7 +206,7 @@ class HarmonicEmbedding(torch.nn.Module):
                 dtype=torch.float32,
             )
 
-        self.register_buffer("_frequencies", frequencies * omega_0, persistent=True)
+        self.register_buffer("_frequencies", frequencies * omega_0 * torch.pi, persistent=True)
         self.register_buffer(
             "_zero_half_pi", torch.tensor([0.0, 0.5 * torch.pi]), persistent=True
         )
