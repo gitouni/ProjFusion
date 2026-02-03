@@ -11,7 +11,7 @@ def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_dir",type=str,default="data/kitti/sequences/13/image_2")
     parser.add_argument("--lidar_dir",type=str,default="data/kitti/sequences/13/velodyne")
-    parser.add_argument("--index",type=int,default=0)
+    parser.add_argument("--index",type=int,default=400)
     parser.add_argument("--res_dir",type=str,default="fig/debug")
     return parser.parse_args()
 

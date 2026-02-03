@@ -703,16 +703,16 @@ class NusceneDatasetSeqWrapper(Dataset):
 
 __classdict__ = {'kitti': BaseKITTIDataset, 'nuscenes': NuSceneDataset}
 DATASET_TYPE = TypeVar('DATASET_TYPE', BaseKITTIDataset, NuSceneDataset)
-            
+       
 class PerturbDataset(Dataset):
     def __init__(self,dataset:DATASET_TYPE,
                  max_deg:float,
                  max_tran:float,
                  min_deg:float=0.0,
                  min_tran:float=0.0,
-                 mag_randomly=True,
-                 disentangle=False,
-                 file=None):
+                 mag_randomly = True,
+                 disentangle = False,
+                 file: Optional[Union[str, List[str]]] = None):
         self.dataset = dataset
         self.disentangle = disentangle
         self.file = file

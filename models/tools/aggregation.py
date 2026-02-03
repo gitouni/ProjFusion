@@ -74,8 +74,6 @@ class MiniResAggregation(nn.Module):
         x = self.act(x)  # (B, D)
         return x  # (B, D)
 
-
-
 class AttentionAggregation(nn.Module):
     def __init__(self, embed_dim: int,
             num_tokens: int,

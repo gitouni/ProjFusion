@@ -17,20 +17,18 @@ def options():
     parser.add_argument("--version",type=str,default="v1.0-test")
     parser.add_argument("--dataroot",type=str,default="data/nuscenes")
     parser.add_argument("--scene",type=str,default="scene-1036")
-    parser.add_argument("--index",type=int,default=7)
+    parser.add_argument("--index",type=int,default=11)
     parser.add_argument("--x0_dir",type=str,default="{method}/{scene}/")
     parser.add_argument("--res_dir",type=str,default="fig/nusc/{scene_idx}-{index}/{tag}/")
     parser.add_argument("--method_dirs",type=str,default=[
-        'experiments/calibnet/nusc/results/iterative_1_2025-02-25-21-30-52',
-        'experiments/rggnet/nusc/results/iterative_1_2025-02-25-21-36-30',
-        'experiments/lccnet/nusc/results/iterative_1_2025-02-25-21-33-35',
-        'experiments/lccnet_mr5/nusc/results/mr_5_2025-03-30-15-52-27',
-        'experiments/lccraft/nusc/results/iterative_1_2025-02-25-21-39-19',
-        'experiments/calib_depth/nusc/results/bc_3_2025-03-31-00-32-07',
-        'experiments/pool_3c_t/nusc_bc/results/ppo_10_2025-04-03-08-52-23',
-        'experiments/pool_3c_t/nusc/results/ppo_10_2025-04-03-08-46-25'
+        '/data/CODE/AutoCalib/denoising_calib/experiments/nusc_r10_t0.5/naiter/calibnet/results/iterative_1_2025-10-31-23-54-46',
+        '/data/CODE/AutoCalib/denoising_calib/experiments/nusc_r10_t0.5/naiter/rggnet/results/iterative_1_2025-10-31-23-58-03',
+        '/data/CODE/AutoCalib/denoising_calib/experiments/nusc_r10_t0.5/naiter/lccnet/results/iterative_1_2025-10-31-23-55-40',
+        '/data/CODE/AutoCalib/denoising_calib/experiments/nusc_r10_t0.5/naiter/lccraft_large/results/iterative_5_2025-11-14-09-58-52',
+        '/home/bit/CODE/Research/git/CalibDepth/experiments/calibdepth/nusc_r10_t0.5/results/bc_3_2025-11-01-00-16-34',
+        'experiments/nusc/projdualfusion_harmonic_r10_t0.5/results/projdualfusion_harmonic_r10_t0.5'
     ])
-    parser.add_argument("--tags",type=str,default=['calibnet','rggnet','lccnet','lccnet_mr5','lccraft','calibdepth','il','rl'])
+    parser.add_argument("--tags",type=str,default=['calibnet','rggnet','lccnet','lccraft','calibdepth','ours'])
     return parser.parse_args()
 
 def loadpcd(name:str):
@@ -85,7 +83,7 @@ if __name__ == "__main__":
         Tf.ToPILImage()
     ])
     image:np.ndarray = np.array(transform(data["img"]), dtype=np.uint8)  # (3, H, W) -> (H, W, 3)
-    pcd:np.ndarray = data['pcd'].detach().transpose(0,1).numpy()  # (N, 3)
+    pcd:np.ndarray = data['pcd'].detach().numpy()  # (N, 3)
     gt_mat = data['extran'].detach().numpy()  # (4,4)
     camera_info = data['camera_info']
     fx, fy, cx, cy = camera_info['fx'], camera_info['fy'], camera_info['cx'], camera_info['cy']

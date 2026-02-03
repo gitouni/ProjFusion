@@ -8,7 +8,7 @@ from .tools.aggregation import __AGGREGATION_DICT__, __AGGREGATION__
 from .util.constant import *
 from .util import so3
 
-def xavier_init_mlp(m:nn.Module):
+def xavier_init_mlp(m: nn.Module):
     if isinstance(m, nn.Linear):
         torch.nn.init.xavier_normal_(m.weight)
         if m.bias is not None:

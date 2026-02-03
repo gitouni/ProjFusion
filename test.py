@@ -1,6 +1,6 @@
 from tqdm import tqdm
 import argparse
-from typing import List, Union, Generator, Tuple, Dict, Iterable, Callable
+from typing import List, Union, Generator, Tuple, Dict, Iterable, Optional
 from collections import defaultdict
 from itertools import islice
 from dataset import __classdict__ as DatasetDict, DATASET_TYPE, PerturbDataset, BatchedPerturbDatasetOutput
@@ -23,8 +23,8 @@ from models.loss import se3_err, se3_reduce, se3_rmse, get_loss
 from models.util import se3
 from models.model import ProjFusion, ProjDualFusion
 
-def get_dataloader(test_dataset_argv:Iterable[Dict],
-        test_dataloader_argv:Dict, dataset_type:str) -> Tuple[List[str], List[Generator[BatchedPerturbDatasetOutput, None, None]]]:
+def get_dataloader(test_dataset_argv: Iterable[Dict],
+        test_dataloader_argv: Dict, dataset_type: str, batch_size: Optional[int] = None) -> Tuple[List[str], List[Generator[BatchedPerturbDatasetOutput, None, None]]]:
     name_list = []
     dataloader_list = []
     data_class: DATASET_TYPE = DatasetDict[dataset_type]
@@ -35,6 +35,8 @@ def get_dataloader(test_dataset_argv:Iterable[Dict],
             dataset = PerturbDataset(base_dataset, **dataset_argv['main'])
             if hasattr(dataset, 'collate_fn'):
                 test_dataloader_argv['collate_fn'] = getattr(dataset, 'collate_fn')
+            if batch_size is not None and batch_size > 0:
+                test_dataloader_argv['batch_size'] = batch_size
             dataloader = DataLoader(dataset, **test_dataloader_argv)
             dataloader_list.append(dataloader)
     else:
@@ -43,7 +45,7 @@ def get_dataloader(test_dataset_argv:Iterable[Dict],
         for base_dataset, name in root_dataset.split_dataset():
             main_args = deepcopy(test_dataset_argv['main'])
             if 'file' in main_args:
-                main_args['file'] = main_args['file'].format(name=name)
+                main_args['file'] = main_args['file'].format(name=name)  # use "{name}" for automatic file path generation
             dataset = PerturbDataset(base_dataset, **main_args)
             if hasattr(dataset, 'collate_fn'):
                 test_dataloader_argv['collate_fn'] = getattr(dataset, 'collate_fn')
@@ -57,7 +59,7 @@ def to_npy(x0:torch.Tensor) -> np.ndarray:
 
 @torch.inference_mode()
 def test_seq(model: Union[ProjFusion, ProjDualFusion], logger: Logger, loader: Generator[BatchedPerturbDatasetOutput, None, None],
-             seq_name: str, res_dir: Path, log_per_iter: int, run_iter: int, device: torch.device, cnt: int=0):
+             seq_name: str, res_dir: Path, log_per_iter: int, run_iter: int, device: torch.device, cnt: int = 0, write_to_file: bool = True):
     model.eval()
     progress = tqdm(loader, total=len(loader), desc=seq_name)
     log_tracker = LogTracker('rot_err','tsl_err','se3_err','time', phase='test')
@@ -72,8 +74,8 @@ def test_seq(model: Union[ProjFusion, ProjDualFusion], logger: Logger, loader: G
         batch_n = len(img)
         init_extran = data['init_extran'].to(device)
         gt_extran = data['gt_extran'].to(device)
-        gt_delta_extran = data['pose_target'].to(device)
-        gt_log = se3.log(gt_delta_extran)
+        # gt_delta_extran = data['pose_target'].to(device)
+        # gt_log = se3.log(gt_delta_extran)
         camera_info = data['camera_info']
         se3_xlist = [to_npy(se3.log(init_extran))]
         pred_extran = init_extran
@@ -88,7 +90,8 @@ def test_seq(model: Union[ProjFusion, ProjDualFusion], logger: Logger, loader: G
         se3_loss = se3_reduce(rot_err, tsl_err)
         batched_x0_list = np.stack(se3_xlist, axis=1)  # (B, K, 6)
         for x0 in batched_x0_list:
-            np.savetxt(res_dir.joinpath("%06d.txt"%cnt), x0)
+            if write_to_file:
+                np.savetxt(res_dir.joinpath("%06d.txt"%cnt), x0)
             cnt += 1
         se3_loss = se3_reduce(rot_err, tsl_err)
         log_tracker.update('rot_err', se3_rmse(rot_err).mean().item(), batch_n)
@@ -108,7 +111,7 @@ def main(config:Dict, resume:bool):
     # torch.backends.cudnn.enabled = False
     dataset_argv = config['dataset']['test']
     dataset_type = config['dataset']['type']
-    name_list, dataloader_list = get_dataloader(dataset_argv['dataset'], dataset_argv['dataloader'], dataset_type)
+    name_list, dataloader_list = get_dataloader(dataset_argv['dataset'], dataset_argv['dataloader'], dataset_type, args.batch_size)
     if config['model']['type'] == 'ProjDualFusion':
         MODEL_CLASS = ProjDualFusion
     elif config['model']['type'] == 'ProjFusion':
@@ -154,11 +157,12 @@ def main(config:Dict, resume:bool):
             if resume:
                 cnt = len([file for file in sub_res_dir.iterdir() if str(file).endswith('.txt')])
             else:
-                shutil.rmtree(str(sub_res_dir))
-                sub_res_dir.mkdir()
+                if args.write_to_file:
+                    shutil.rmtree(str(sub_res_dir))
+                sub_res_dir.mkdir(exist_ok=True)
                 cnt = 0   
         record = test_seq(model, logger, dataloader, name, sub_res_dir, 
-            run_argv['log_per_iter'], run_argv['run_iter'], device, cnt)
+            run_argv['log_per_iter'], run_argv['run_iter'], device, cnt, args.write_to_file)
         logger.info("{}: {}".format(name, record))
         record_list.append([name, record])
     total_record = defaultdict(float)
@@ -173,8 +177,11 @@ def main(config:Dict, resume:bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_lerr/log/projdualfusion_harmonic.yml")
-    parser.add_argument("--run_iter", type=int, default=1)
+    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_r10_t0.5/log/projdualfusion_harmonic.yml")
+    parser.add_argument("--run_iter", type=int, default=3)
+    parser.add_argument("--write_to_file", action="store_true", default=True)
+    parser.add_argument("--no_write_to_file", dest="write_to_file", action="store_false", default=False)
+    parser.add_argument("--batch_size", type=int, default=-1)
     parser.add_argument("--name", default=None)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()

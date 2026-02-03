@@ -30,3 +30,4 @@ test_*.py
 debug_*
 tmp_*
 *.pt
+*.tex

@@ -6,11 +6,11 @@ COLS_SPEC = r"lllcccc|cccc|cc"
 
 ROT_KEYS   = ["Rx", "Ry", "Rz", "RRMSE"]
 TRANS_KEYS = ["tx", "ty", "tz", "tRMSE"]
-ACC_JSON_KEYS = ["0.5d2.5c", "1d5c"]   # JSON中的键
+ACC_JSON_KEYS = ["1d2.5c", "2d5c"]   # JSON中的键
 ACC_HEADER = ["$L_1$", "$L_2$"]  # 表头显示
 
 ALL_KEYS = ROT_KEYS + TRANS_KEYS + ACC_JSON_KEYS
-HIGHLIGHT_KEYS = ["RRMSE", "tRMSE", "0.5d2.5c", "1d5c"]
+HIGHLIGHT_KEYS = ["RRMSE", "tRMSE"] + ACC_JSON_KEYS
 
 HIGHER_IS_BETTER = {k: False for k in (ROT_KEYS + TRANS_KEYS)}
 HIGHER_IS_BETTER.update({k: True for k in ACC_JSON_KEYS})
@@ -69,7 +69,7 @@ def fmt_display(key, val):
         return "--"
     if key in ['tx', 'ty', 'tz', 'tRMSE']:
         return f"{100.0*val:.3f}"               # m -> cm
-    if key in ("0.5d2.5c","1d5c"):
+    if key in ACC_JSON_KEYS:
         return f"{100.0*val:.2f}\\%" # ratio -> %
     return f"{val:.3f}"
 
@@ -105,7 +105,7 @@ def build_table(root, methods, method_names):
         r"\multirow{2}*{Dataset} & \multirow{2}*{Range} & \multirow{2}*{Method} & "
         r"\multicolumn{4}{c}{Rotation ($^\circ$)$\downarrow$} & "
         r"\multicolumn{4}{c}{Translation (cm)$\downarrow$} & "
-        r"\multicolumn{2}{c}{Success Rate (\%)$uparrow$} \\",
+        r"\multicolumn{2}{c}{Success Rate (\%)$\uparrow$} \\",
         r"~ & ~ & ~ & Roll & Pitch & Yaw & RMSE & X & Y & Z & RMSE & "
         + " & ".join(ACC_HEADER) + r" \\",
         r"\midrule",

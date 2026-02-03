@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from typing import Optional, Callable
+from typing import Optional
 from torch.nn import functional as F
 import warnings
 import os
