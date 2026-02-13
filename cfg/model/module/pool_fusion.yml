@@ -1,0 +1,5 @@
+image_hw: [224, 448]
+freeze_encoders: true
+margin: 2.0
+freeze_encoders: true
+output_type: 2d

@@ -1,5 +1,5 @@
 path:
-  name: wosoid
+  name: projdualfusion_harmonic_attn
   base_dir: experiments/{base_dir}/
   log: log
   results: results
@@ -16,6 +16,7 @@ loss: !inc ./cfg/model/module/loss.yml
 model:
   type: ProjDualFusion
   args:
+    encoder_type: AttenDualFusionNet
     encoder_argv:
       - !inc cfg/model/module/attenfusion_harmonic.yml
       - !inc cfg/model/module/submodule/vit.yml

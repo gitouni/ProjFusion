@@ -1,0 +1,7 @@
+depth_encoder_type: resnet
+depth_encoder_args:
+  num_layers: 18
+  pretrained: true
+  second_last: true
+pooling_size: 1
+max_depth: 50.0

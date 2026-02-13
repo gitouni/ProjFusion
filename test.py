@@ -177,7 +177,7 @@ def main(config:Dict, resume:bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_harmonic_r10_t0.5/log/projdualfusion_harmonic.yml")
+    parser.add_argument("--config", type=str, default="experiments/kitti/projdualfusion_concat_r10_t0.5/log/projdualfusion_concat.yml")
     parser.add_argument("--run_iter", type=int, default=3)
     parser.add_argument("--write_to_file", action="store_true", default=True)
     parser.add_argument("--no_write_to_file", dest="write_to_file", action="store_false", default=False)

@@ -1,5 +1,5 @@
 path:
-  name: wosoid
+  name: projfusion_rope
   base_dir: experiments/{base_dir}/
   log: log
   results: results
@@ -16,6 +16,7 @@ loss: !inc ./cfg/model/module/loss.yml
 model:
   type: ProjFusion
   args:
+    encoder_type: AttenFusionNet
     encoder_argv: !inc cfg/model/module/atten_rope_fusion.yml
     aggregation_argv: !inc cfg/model/module/aggregation/miniaggregation.yml
     mlp_argv:

@@ -1,5 +1,5 @@
 path:
-  name: wosoid
+  name: projfusion
   base_dir: experiments/{base_dir}/
   log: log
   results: results
@@ -16,6 +16,7 @@ loss: !inc ./cfg/model/module/loss.yml
 model:
   type: ProjFusion
   args:
+    encoder_type: AttenFusionNet
     encoder_argv:
       - !inc cfg/model/module/attenfusion.yml
       - !inc cfg/model/module/submodule/vit.yml

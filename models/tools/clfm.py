@@ -30,7 +30,7 @@ class CLFM(nn.Module):
         else:
             raise ValueError
 
-    def forward(self, uv, feat_2d:torch.Tensor, feat_3d:torch.Tensor):
+    def forward(self, uv: torch.Tensor, feat_2d:torch.Tensor, feat_3d:torch.Tensor):
         feat_3d_interp = self.interp(uv, feat_2d.detach(), feat_3d.detach())
         out2d = self.fuse2d(feat_2d, feat_3d_interp)
 

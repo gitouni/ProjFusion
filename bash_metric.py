@@ -59,16 +59,24 @@ if __name__ == "__main__":
         'log/ablation/projdualfusion_harmonic_r10_t0.5.json',
         'log/ablation/projdualfusion_harmonic_f2_r10_t0.5.json',
         'log/ablation/projdualfusion_harmonic_f10_r10_t0.5.json',
+        'log/ablation/projdualfusion_harmonic_m0_mask_r10_t0.5.json',
+        'log/ablation/projdualfusion_rope_r10_t0.5.json',
         'log/ablation/projfusion_harmonic_r10_t0.5.json',
         'log/ablation/projdualfusion_harmonic_resnet_r10_t0.5.json',
-        'log/ablation/projdualfusion_r10_t0.5.json']
+        'log/ablation/projdualfusion_r10_t0.5.json',
+        'log/ablation/projdualfusion_concat_r10_t0.5.json',
+        'log/ablation/projdualfusion_harmonic_depth_r10_t0.5.json']
     pred_dir_roots = [
         'experiments/kitti/projdualfusion_harmonic_r10_t0.5/results/projdualfusion_harmonic_r10_t0.5',
         'experiments/kitti/projdualfusion_harmonic_f2_r10_t0.5/results/projdualfusion_harmonic_f2_r10_t0.5',
         'experiments/kitti/projdualfusion_harmonic_f10_r10_t0.5/results/projdualfusion_harmonic_f10_r10_t0.5',
+        'experiments/kitti/projdualfusion_harmonic_m0_mask_r10_t0.5/results/projdualfusion_harmonic_m0_mask_r10_t0.5',
+        'experiments/kitti/projdualfusion_rope_r10_t0.5/results/projdualfusion_rope_r10_t0.5',
         'experiments/kitti/projfusion_harmonic_r10_t0.5/results/projfusion_harmonic_r10_t0.5',
         'experiments/kitti/projdualfusion_harmonic_resnet_r10_t0.5/results/projdualfusion_harmonic_resnet_r10_t0.5',
-        'experiments/kitti/projdualfusion_r10_t0.5/results/projdualfusion_r10_t0.5']
+        'experiments/kitti/projdualfusion_r10_t0.5/results/projdualfusion_r10_t0.5',
+        'experiments/kitti/projdualfusion_concat_r10_t0.5/results/projdualfusion_concat_r10_t0.5',
+        'experiments/kitti/projdualfusion_harmonic_depth_r10_t0.5/results/projdualfusion_harmonic_depth_r10_t0.5']
     for log_dir, pred_dir_root in zip(log_dirs, pred_dir_roots):
         process = subprocess.Popen([python_path,'metrics.py', '--gt_dir',gt_dir, '--pred_dir_root',pred_dir_root, '--log_file',log_dir])
         process.wait()  # must be serialized

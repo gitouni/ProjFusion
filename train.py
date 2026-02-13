@@ -211,8 +211,8 @@ def str2bool(s:str) -> bool:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_r5_t0.5.yml")
-    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion_harmonic.yml")
+    parser.add_argument("--dataset_config",type=str,default="cfg/dataset/kitti_debug.yml")
+    parser.add_argument("--model_config",type=str,default="cfg/model/projdualfusion_concat.yml")
     parser.add_argument("--base_dir",type=str,default="kitti")
     parser.add_argument("--task_name",type=str,default="debug")
     parser.add_argument("--resume",type=str,default=None)

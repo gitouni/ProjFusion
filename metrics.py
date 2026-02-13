@@ -10,17 +10,21 @@ from collections import defaultdict
 import json
 from pathlib import Path
 
-def se3_err(pred_se3:np.ndarray, gt_se3:np.ndarray) -> Tuple[np.ndarray,np.ndarray]:
+def se3_err(pred_se3:np.ndarray, gt_se3:np.ndarray) -> Tuple[np.ndarray,np.ndarray, np.ndarray]:
     delta_se3 = pred_se3 @ inv_pose_np(gt_se3)
     delta_euler = np.abs(Rotation.from_matrix(delta_se3[...,:3,:3]).as_euler(seq='XYZ',degrees=True))  # (B, 3)
+    geodesic_distance = np.rad2deg(np.arccos(np.clip((np.trace(delta_se3[...,:3,:3]) - 1) / 2, -1.0, 1.0)))
     delta_tsl = np.abs(delta_se3[...,:3,3])  # (B, 3)
-    return delta_euler, delta_tsl  # (B, 3), (B, 3)
+    return delta_euler, delta_tsl, geodesic_distance   # (B, 3), (B, 3)
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pred_dir_root",type=str,default="experiments/nusc/projdualfusion_harmonic_iter8/results/projdualfusion_harmonic_iter8")
-    parser.add_argument("--gt_dir",type=str,default="cache/nuscenes_gt")
-    parser.add_argument("--log_file",type=str,default="log/nusc/projdualfusion_harmonic_iter8.json")
+    parser.add_argument("--pred_dir_root",type=str,default="experiments/kitti/projdualfusion_rope_r10_t0.5/results/projdualfusion_rope_r10_t0.5")
+    parser.add_argument("--gt_dir",type=str,default="cache/kitti_gt")
+    parser.add_argument("--log_file",type=str,default="log/ablation/projdualfusion_rope_r10_t0.5.json")
+    parser.add_argument("--sample_num", type=int, default=500, help="number of samples for evaluation")
+    parser.add_argument("--L1", type=float, default=[1.0, 2.5], help="threshold of L1 metric (deg, cm)")
+    parser.add_argument("--L2", type=float, default=[2.0, 5.0], help="threshold of L2 metric (deg, cm)")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -29,9 +33,13 @@ if __name__ == "__main__":
     pred_dirs = sorted(os.listdir(args.pred_dir_root))
     assert len(gt_files) == len(pred_dirs), "number of gt files ({}) != number of pred subdirs ({})".format(len(gt_files), len(pred_dirs))
     names = pred_dirs
-    metrics = defaultdict(list)
-    print("Compute metrics on {}".format(names))
-    metric_list = []
+    for pred_subdir in pred_dirs:
+        pred_dir = os.path.join(args.pred_dir_root, pred_subdir)
+        pred_files = sorted(os.listdir(pred_dir))
+        sample_num = min(args.sample_num, len(pred_files))
+    print("Compute metrics on {} with sample_num={}".format(names, sample_num))
+    all_metrics = defaultdict(list)
+    meta = defaultdict(lambda: defaultdict(float))
     log_path = os.path.dirname(args.log_file)
     Path(log_path).mkdir(parents=True, exist_ok=True)
     if os.path.exists(args.log_file):
@@ -40,40 +48,35 @@ if __name__ == "__main__":
         gt_se3 = np.loadtxt(os.path.join(args.gt_dir, gt_file))
         pred_dir = os.path.join(args.pred_dir_root, pred_subdir)
         pred_files = sorted(os.listdir(pred_dir))
-        R_err = np.zeros([len(pred_files), 3])
-        t_err = np.zeros([len(pred_files), 3])
+        if len(pred_files) > sample_num:
+            index = np.unique(np.linspace(0, len(pred_files)-1, sample_num, endpoint=True, dtype=int))
+            pred_files = [pred_files[i] for i in index]
         for i, pred_file in enumerate(pred_files):
             pred_se3_i = np.loadtxt(os.path.join(pred_dir, pred_file))
             if np.ndim(pred_se3_i) == 2:
                 pred_se3_i = pred_se3_i[-1]  # sequences of prediction
-            R_err_i, t_err_i = se3_err(toMatw(pred_se3_i), gt_se3)
-            R_err[i, :] = R_err_i
-            t_err[i, :] = t_err_i
-        dir_metric = defaultdict(list)
-        dir_metric['Rx'] = np.mean(R_err[:,0])
-        dir_metric['Ry'] = np.mean(R_err[:,1])
-        dir_metric['Rz'] = np.mean(R_err[:,2])
-        dir_metric['tx'] = np.mean(t_err[:,0])
-        dir_metric['ty'] = np.mean(t_err[:,1])
-        dir_metric['tz'] = np.mean(t_err[:,2])
-        R_rmse = np.linalg.norm(R_err, axis=1)
-        t_rmse = np.linalg.norm(t_err, axis=1)
-        r_mae = np.mean(np.abs(R_err), axis=1)
-        t_mae = np.mean(np.abs(t_err), axis=1)
-        dir_metric['RRMSE'] = np.mean(R_rmse)
-        dir_metric['tRMSE'] = np.mean(t_rmse)
-        dir_metric['RMAE'] = np.mean(r_mae)
-        dir_metric['tMAE'] = np.mean(t_mae)
-        dir_metric['1d2.5c'] = np.sum(np.logical_and(R_rmse < 1, t_rmse < 0.025)) / len(R_rmse)
-        dir_metric['2d5c'] = np.sum(np.logical_and(R_rmse < 2, t_rmse < 0.05)) / len(R_rmse)
-        dir_metric['3d3c'] = np.sum(np.logical_and(R_rmse < 3, t_rmse < 0.03)) / len(R_rmse)
-        dir_metric['5d5c'] = np.sum(np.logical_and(R_rmse < 5, t_rmse < 0.05)) / len(R_rmse)
-        metric_list.append(dir_metric)
-        for metric in dir_metric.keys():
-            metrics[metric].append(dir_metric[metric])
+            pred_se3 = toMatw(pred_se3_i)
+            R_err_i, t_err_i, geodesic_distance_i = se3_err(pred_se3, gt_se3)
+            RRMSE = np.linalg.norm(R_err_i)
+            tRMSE = np.linalg.norm(t_err_i)
+            all_metrics['Rx'].append(R_err_i[0])
+            all_metrics['Ry'].append(R_err_i[1])
+            all_metrics['Rz'].append(R_err_i[2])
+            all_metrics['tx'].append(t_err_i[0])
+            all_metrics['ty'].append(t_err_i[1])
+            all_metrics['tz'].append(t_err_i[2])
+            all_metrics['RRMSE'].append(RRMSE)
+            all_metrics['tRMSE'].append(tRMSE)
+            all_metrics['geodesic_distance'].append(geodesic_distance_i)
+            all_metrics['RMAE'].append(np.mean(np.abs(R_err_i)))
+            all_metrics['tMAE'].append(np.mean(np.abs(t_err_i)))
     # average
-    for metric in metrics.keys():
-        metrics[metric] = sum(metrics[metric]) / len(metrics[metric])
-    metric_list.append(metrics)
-    json.dump(metric_list, open(args.log_file,'w'),indent=2)
+    for metric in all_metrics.keys():
+        meta[metric]['mean'] = np.mean(all_metrics[metric]).item()
+        meta[metric]['std'] = np.std(all_metrics[metric]).item()
+    meta['success_rate']['L1'] = np.mean((np.array(all_metrics['RRMSE']) < args.L1[0]) &\
+                                         (np.array(all_metrics['tRMSE']) < args.L1[1] / 100)).item()
+    meta['success_rate']['L2'] = np.mean((np.array(all_metrics['RRMSE']) < args.L2[0]) &\
+                                         (np.array(all_metrics['tRMSE']) < args.L2[1] / 100)).item()
+    json.dump(meta, open(args.log_file,'w'),indent=2)
     print('log file saved to {}'.format(args.log_file))

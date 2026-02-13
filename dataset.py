@@ -65,7 +65,7 @@ def check_length(root:str,save_name='data_len.json'):
         json.dump(dict_len,f)
         
 class KITTIFilter:
-    def __init__(self, voxel_size:Optional[float]=None, positive_x:bool=False, min_dist:float=0.15, skip_point:int=1):
+    def __init__(self, voxel_size:Optional[float]=None, positive_x:bool=True, min_dist:float=0.15, skip_point:int=1):
         """KITTIFilter
 
         Args:
@@ -190,7 +190,7 @@ class BaseKITTIDataset(Dataset):
         self.tensor_tran = lambda x:torch.from_numpy(x).to(torch.float32)
         self.img_tran = Tf.Compose([Tf.ToTensor(),
                                     Tf.Normalize(IMAGENET_MEAN, IMAGENET_STD)])
-        self.pcd_tran = KITTIFilter(voxel_size, min_dist, skip_point)
+        self.pcd_tran = KITTIFilter(voxel_size, min_dist=min_dist, skip_point=skip_point)
         self.extend_ratio = extend_ratio
         
     def __len__(self):
@@ -800,8 +800,9 @@ if __name__ == "__main__":
     #     print('{key}: {shape}'.format(key=key, shape=shape))
     base_dataset = NuSceneDataset('v1.0-trainval','data/nuscenes',daylight=True)
     print("dataset len:{}".format(len(base_dataset)))
-    base_dataset = NuSceneDataset('v1.0-trainval','data/nuscenes',daylight=False)
-    print("dataset len:{}".format(len(base_dataset)))
+    print(base_dataset[0]['extran'])
+    # base_dataset = NuSceneDataset('v1.0-trainval','data/nuscenes',daylight=False)
+    # print("dataset len:{}".format(len(base_dataset)))
     # data = base_dataset[0]
     # for key,value in data.items():
     #     if hasattr(value, 'shape'):
