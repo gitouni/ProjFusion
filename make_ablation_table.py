@@ -13,6 +13,7 @@ LOG_DIRS = [
     'log/ablation/projfusion_harmonic_r10_t0.5.json',
     'log/ablation/projdualfusion_harmonic_resnet_r10_t0.5.json',
     'log/ablation/projdualfusion_harmonic_depth_r10_t0.5.json',
+    'log/ablation/projdualfusion_harmonic_depth_m0_r10_t0.5.json',
     'log/ablation/projdualfusion_concat_r10_t0.5.json'
 ]
 
@@ -27,6 +28,7 @@ OPTION_ROWS_ORIG = [
     (r"\xmark", r"\cmark", "3D", "harmonic ($n_h=6$)",  "DINOv2"),
     (r"\cmark", r"\cmark", "3D", "harmonic ($n_h=6$)",  "ResNet-18"),
     (r"\cmark", r"\cmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
+    (r"\cmark", r"\xmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
     (r"\cmark", r"\xmark", "3D", "concatenation",  "DINOv2"),
 ]
 

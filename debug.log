@@ -1,4 +1,3 @@
-python train.py '--dataset_config' cfg/dataset/kitti_r10_t0.5.yml '--model_config' cfg/model/projdualfusion_harmonic.yml '--base_dir' kitti '--task_name' projdualfusion_harmonic_m0_mask_r10_t0.5
 Ground truth poses are not avaialble for sequence 12.
 Ground truth poses are not avaialble for sequence 21.
 Ground truth poses are not avaialble for sequence 11.

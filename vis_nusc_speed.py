@@ -2,12 +2,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from nuscenes.nuscenes import NuScenes
-
+from pathlib import Path
 def main():
     # ================= 配置区域 =================
     # 请修改为您本地 nuScenes 数据集的根目录
     dataroot = 'data/nuscenes/'
     version = 'v1.0-test'  # 指定使用 test 集
+    res_dir = Path('fig/speed_analysis/nusc/') # 结果保存目录
+    res_dir.mkdir(exist_ok=True, parents=True)
     # ===========================================
 
     print(f"Initializing nuScenes {version}...")
@@ -85,6 +87,7 @@ def main():
             
             # 移动到下一帧
             current_sample_token = next_sample_token
+    np.savetxt(res_dir / "speeds.txt", all_speeds)
 
     # 转换单位 (可选: m/s -> km/h)
     # all_speeds_kmh = [s * 3.6 for s in all_speeds]
@@ -96,6 +99,12 @@ def main():
         max_speed = np.max(all_speeds)
         print(f"Global Mean Speed: {mean_speed:.2f} m/s")
         print(f"Global Max Speed: {max_speed:.2f} m/s")
+        lower_5m_per_second = sum(1 for s in all_speeds if s < 5.0)
+        print(f"Overall Speeds < 5 m/s count: {lower_5m_per_second / len(all_speeds) * 100: .2f}%")
+        lower_8m_per_second = sum(1 for s in all_speeds if s < 8.0)
+        print(f"Overall Speeds < 8 m/s count: {lower_8m_per_second / len(all_speeds) * 100: .2f}%")
+        lower_10m_per_second = sum(1 for s in all_speeds if s < 10.0)
+        print(f"Overall Speeds < 10 m/s count: {lower_10m_per_second / len(all_speeds) * 100: .2f}%")
 
         # --- 绘图 ---
         plt.figure(figsize=(12, 6))
@@ -117,8 +126,8 @@ def main():
         plt.grid(True, linestyle='--', alpha=0.5)
         
         plt.tight_layout()
-        plt.savefig('nuscenes_speed_distribution.png', dpi=300)
-        print("Plot saved to nuscenes_speed_distribution.png")
+        plt.savefig(res_dir / 'nuscenes_speed_distribution.pdf', bbox_inches='tight')
+        print(f"Plot saved to {res_dir / 'nuscenes_speed_distribution.pdf'}")
         plt.show()
     else:
         print("No speed data calculated. Please check dataset path and version.")

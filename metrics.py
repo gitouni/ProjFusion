@@ -19,9 +19,9 @@ def se3_err(pred_se3:np.ndarray, gt_se3:np.ndarray) -> Tuple[np.ndarray,np.ndarr
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pred_dir_root",type=str,default="experiments/kitti/projdualfusion_rope_r10_t0.5/results/projdualfusion_rope_r10_t0.5")
+    parser.add_argument("--pred_dir_root",type=str,default="experiments/kitti/projdualfusion_harmonic_depth_m0_r10_t0.5/results/projdualfusion_harmonic_depth_m0_r10_t0.5/")
     parser.add_argument("--gt_dir",type=str,default="cache/kitti_gt")
-    parser.add_argument("--log_file",type=str,default="log/ablation/projdualfusion_rope_r10_t0.5.json")
+    parser.add_argument("--log_file",type=str,default="log/ablation/projdualfusion_harmonic_depth_m0_r10_t0.5.json")
     parser.add_argument("--sample_num", type=int, default=500, help="number of samples for evaluation")
     parser.add_argument("--L1", type=float, default=[1.0, 2.5], help="threshold of L1 metric (deg, cm)")
     parser.add_argument("--L2", type=float, default=[2.0, 5.0], help="threshold of L2 metric (deg, cm)")
@@ -78,5 +78,7 @@ if __name__ == "__main__":
                                          (np.array(all_metrics['tRMSE']) < args.L1[1] / 100)).item()
     meta['success_rate']['L2'] = np.mean((np.array(all_metrics['RRMSE']) < args.L2[0]) &\
                                          (np.array(all_metrics['tRMSE']) < args.L2[1] / 100)).item()
+    meta['success_rate']['L1rot'] = np.mean(np.array(all_metrics['RRMSE']) < args.L1[0]).item()
+    meta['success_rate']['L2rot'] = np.mean(np.array(all_metrics['RRMSE']) < args.L2[0]).item()
     json.dump(meta, open(args.log_file,'w'),indent=2)
     print('log file saved to {}'.format(args.log_file))

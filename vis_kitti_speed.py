@@ -2,13 +2,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pykitti
-
+from pathlib import Path
 def main():
     # ================= 配置区域 =================
     # 请修改为您本地 KITTI 数据集的根目录
     # 目录结构应包含 sequences/13/times.txt 等
     basedir = 'data/kitti' 
-    
+    res_dir = Path('fig/speed_analysis/kitti/') # 结果保存目录
+    res_dir.mkdir(exist_ok=True, parents=True)
     # 定义需要处理的序列
     sequences = ['13', '14', '15', '16', '18']
     
@@ -108,6 +109,12 @@ def main():
 
     # 4. 绘制箱线图
     if all_speeds:
+        for speed_list, seq in zip(all_speeds, valid_sequences):
+            np.savetxt(res_dir / f"speeds_seq_{seq}.txt", speed_list)
+            lower_6m_per_second = sum(1 for s in speed_list if s < 6.0)
+            print(f"Sequence {seq}: Speeds < 6 m/s count: {lower_6m_per_second / len(speed_list) * 100: .2f}%")
+            lower_10m_per_second = sum(1 for s in speed_list if s < 10.0)
+            print(f"Sequence {seq}: Speeds < 10 m/s count: {lower_10m_per_second / len(speed_list) * 100: .2f}%")
         plt.figure(figsize=(10, 6))
         
         # 绘制箱线图
@@ -128,8 +135,8 @@ def main():
         plt.grid(True, linestyle='--', alpha=0.7)
         
         # 保存或显示
-        plt.savefig('speed_distribution.png', dpi=300)
-        print("Plot saved to speed_distribution.png")
+        plt.savefig(res_dir / 'kitti_speed_distribution.pdf', bbox_inches='tight')
+        print(f"Plot saved to {res_dir / 'kitti_speed_distribution.pdf'}")
         plt.show()
     else:
         print("No valid data to plot.")

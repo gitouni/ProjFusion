@@ -14,9 +14,9 @@ def options():
     parser = argparse.ArgumentParser()
     # 修改为 pykitti 需要的路径结构
     parser.add_argument("--kitti_root", type=str, default="data/kitti", help="KITTI dataset root")
-    parser.add_argument("--sequence", type=str, default="13", help="Odometry sequence ID")
-    parser.add_argument("--index", type=int, default=400, help="Frame index")
-    parser.add_argument("--res_dir", type=str, default="fig/debug")
+    parser.add_argument("--sequence", type=str, default="15", help="Odometry sequence ID")
+    parser.add_argument("--index", type=int, default=0, help="Frame index")
+    parser.add_argument("--res_dir", type=str, default="fig/debug_bias")
     return parser.parse_args()
 
 def topcd(pcd_arr: np.ndarray):
@@ -57,7 +57,7 @@ def viz_proj_pcd(u: np.ndarray, v: np.ndarray, depth: np.ndarray, img: np.ndarra
     if draw_img:
         plt.imshow(img)
     # 绘制散点
-    plt.scatter(u, v, c=np.sqrt(depth), cmap=cmap, alpha=0.8, s=10)
+    plt.scatter(u, v, c=np.sqrt(depth), cmap=cmap, alpha=0.8, s=1)
     margin = margin_ratio / 2   # half on top/bottom/left/right
     # 设置显示范围 (保持你原有的逻辑，注意y轴是反向的: H -> 0)
     plt.axis([int(-margin * W), int((1 + margin) * W), int((1 + margin) * H), int(-margin * H)])
@@ -166,57 +166,21 @@ if __name__ == "__main__":
     image_raw = image_raw.resize((W, H), resample=Image.BILINEAR)
     image_np = np.array(image_raw) # H, W, 3
     pcd_full = dataset.get_velo(args.index) # [N, 4] (x, y, z, intensity)
-    np.save(res_dir / "pcd_full.npy", pcd_full)
-    np.savetxt(res_dir / "intran.txt", intran)
-    np.savetxt(res_dir / "extran.txt", extran)
+    # np.save(res_dir / "pcd_full.npy", pcd_full)
+    # np.savetxt(res_dir / "intran.txt", intran)
+    # np.savetxt(res_dir / "extran.txt", extran)
     # 保存原始参考图
     image_raw.save(res_dir / "image.png")
     # 2. 生成并保存投影图 (Projection)
-    proj_path = os.path.join(res_dir, "projection.png")
-    depth_path = os.path.join(res_dir, "depth.png")
-    proj_expand_path = os.path.join(res_dir, "projection_expand.png")
-    depth_expand_path = os.path.join(res_dir, "depth_expand.png")
+    proj_path = os.path.join(res_dir, "projection_gt.png")
+    u, v, depth = project_velo_to_image(pcd_full[:, :3], extran, intran, H, W)
+    viz_proj_pcd(u, v, depth, image_np, proj_path, draw_img=True, face_color='black', cmap='rainbow_r', margin_ratio=0)
+    proj_perturb_path = os.path.join(res_dir, "projection_perturb.png")
     perturb = np.eye(4)
-    perturb[:3, :3] = R.from_rotvec([-0.05, 0.05, -0.2]).as_matrix()
+    perturb[0, 3] += 0.025 
     extran = perturb @ extran
     H, W = image_np.shape[:2]
     u, v, depth = project_velo_to_image(pcd_full[:, :3], extran, intran, H, W)
-    viz_proj_pcd(u, v, depth, image_np, proj_path)
-    viz_proj_pcd(u, v, depth, image_np, depth_path, face_color='black', cmap='gray', margin_ratio=0)
-    margin_ratio = 2.0
-    u, v, depth = project_velo_to_image(pcd_full[:, :3], extran, intran, H, W, margin_ratio)
-    viz_proj_pcd(u, v, depth, image_np, proj_expand_path, margin_ratio=margin_ratio)
-    viz_proj_pcd(u, v, depth, image_np, depth_expand_path, face_color='black', cmap='gray', margin_ratio=margin_ratio)
-
-    print(f"Captured screen and projection for index {args.index}")
-    sys.exit(0)
-    # --- Open3D 可视化准备 ---
-    pcd_o3d = topcd(pcd_full[:, :3])
-    pcd_o3d, _ = pcd_o3d.remove_statistical_outlier(nb_neighbors=10, std_ratio=5.0)
-    # --- 新增：按 Z 轴高度上色 ---
-    points = np.asarray(pcd_o3d.points)  # filtered points
-    z_values = points[:, 2]  # 获取 Z 坐标
-    z_min = np.min(z_values)
-    z_max = np.max(z_values)
-
-    # 归一化 Z 值到 [0, 1]
-    z_norm = (z_values - z_min) / (z_max - z_min)
-
-    # 使用 matplotlib 的颜色映射（例如 'jet' 或 'viridis'）
-    # .colors 属性会返回 (N, 4)，我们只取前 3 列 (RGB)
-    colors = plt.get_cmap('jet')(z_norm)[:, :3] 
-
-    # 将颜色赋给点云对象
-    pcd_o3d.colors = o3d.utility.Vector3dVector(colors)
-    # ---------------------------
-    # 绑定按键
-    key_to_callback = {
-        ord("K"): lambda vis: [setattr(vis.get_render_option(), 'background_color', [0, 0, 0]), False][1],
-        ord("B"): lambda vis: [setattr(vis.get_render_option(), 'background_color', [1, 1, 1]), False][1],
-        ord("S"): partial(capture_all, res_dir=args.res_dir, pcd_full=pcd_full[:, :3], dataset=dataset, index=args.index, image_np=image_np),
-        ord("+"): increase_point_size,
-        ord("-"): decrease_point_size,
-    }
-
-    print("Controls: 'S' to save all, '+'/-' to resize points, 'K'/'B' for BG color")
-    o3d.visualization.draw_geometries_with_key_callbacks([pcd_o3d], key_to_callback)
+    viz_proj_pcd(u, v, depth, image_np, proj_perturb_path, draw_img=True, face_color='black', cmap='rainbow_r', margin_ratio=0)
+    # viz_proj_pcd(u, v, depth, image_np, depth_path, face_color='black', cmap='gray', margin_ratio=0)
+    
