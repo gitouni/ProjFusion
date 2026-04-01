@@ -1,0 +1,6 @@
+n_epoch: 30
+val_per_epoch: 5
+log_per_iter: 16
+seed: 42
+device: cuda:0
+precision: 'no'

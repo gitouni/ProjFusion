@@ -1,0 +1,5 @@
+img_encoder_type: resnet
+img_encoder_args:
+  num_layers: 18
+  pretrained: true
+  second_last: true

@@ -1,0 +1,7 @@
+type: cosine-warmup
+args:
+  warmup_steps: 2
+  warmup_start_lr_ratio: 0.1
+  total_steps: 30
+  min_lr_ratio: 0.05
+key_epochs: total_steps

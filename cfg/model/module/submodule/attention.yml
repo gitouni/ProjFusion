@@ -1,0 +1,4 @@
+heads: 6
+dim_head: 64
+dropout: 0.0
+

@@ -1,0 +1,11 @@
+type: AttentionAggregation
+args:
+  depth: 2
+  n_head: 6
+  dim_head: 64
+  feedforward_ratio: 1.0
+  dropout: 0.0
+  activation_fn:
+    activation: silu
+    inplace: true
+  ffn_layer: mlp

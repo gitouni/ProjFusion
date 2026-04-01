@@ -1,0 +1,38 @@
+base: cfg/model_nuscenes/common.yml
+use_soid: true
+path:
+  name: nuscenes_soid
+  base_dir: experiments/attn_3c_t/
+  log: log
+  results: results
+  rewards: rewards
+  checkpoint: checkpoint
+  resume: null
+  resume_eval_first: false
+  pretrain: &pretrained_model experiments/attn_3c_t/nuscenes_soid/checkpoint/best_model.pth
+
+agent:
+  state_argv:
+    encoder_type: AttenFusionNet
+    encoder_argv:
+      image_hw: [224, 448]
+      image_model_name: dinov2_vits14
+      pointgpt_config: cfg/pointgpt/finetune_nuscenes_tiny.yaml
+      pointgpt_checkpoint: pretrained/pretrain_nuscenes_tiny/PointGPT-S/nusc_tiny_fps/ckpt-last.pth
+      n_freqs: 10
+      attend_input: true
+      num_heads: 8
+      head_dims: 64
+      freeze_encoders: true
+    aggregation_type: AttentionAggregation
+    aggregation_argv:
+      depth: 4
+      n_head: 8
+      feedforward_ratio: 4.0  # 4 times of embedding dim, default setting of ViT
+      dropout: 0.1
+      ffn_layer: mlp
+  ac_argv:
+    activation: leakyrelu
+    inplace: true
+    mlp_dims: [256, 128]
+    

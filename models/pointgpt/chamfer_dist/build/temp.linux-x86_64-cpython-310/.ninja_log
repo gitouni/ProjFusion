@@ -1,0 +1,4 @@
+# ninja log v5
+1	9912	1760316734	/home/bit/CODE/Research/AutoCalib/ProjFusion/models/pointgpt/chamfer_dist/build/temp.linux-x86_64-cpython-310/chamfer_cuda.o	92edcc17e45f6ca8
+0	28118	1760316752	/home/bit/CODE/Research/AutoCalib/ProjFusion/models/pointgpt/chamfer_dist/build/temp.linux-x86_64-cpython-310/chamfer.o	4b508e4682026ca9
+5	26887	1760319018	/home/bit/CODE/Research/AutoCalib/ProjFusion/models/pointgpt/chamfer_dist/build/temp.linux-x86_64-cpython-310/chamfer.o	7303092a8c6b8c6d

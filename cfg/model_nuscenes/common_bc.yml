@@ -1,0 +1,55 @@
+seed: 0
+device: &device cuda:0
+env:
+  rot_stepsizes: [0.004, 0.016, 0.064]
+  tsl_stepsizes: [0.0025, 0.01, 0.04]
+  reward_deadzone: 0.03
+  reward_step_dict:
+    better: 0.5
+    little_better: 0.08
+    same: -0.025
+    little_worse: -0.1
+    worse: -0.6
+  use_reward_goal: false
+  reward_goal_bias: 1.0
+  device: *device
+
+loss:
+  ilrl_alpha: 0.0  # no ppo loss
+
+optimizer:
+  type: prodigy
+  args:
+    betas:
+    - 0.9
+    - 0.999
+    decouple: true
+    weight_decay: 0.01
+  max_grad: 1.0
+
+scheduler:
+  type: cosine
+  args:
+    T_max: &n_epoch 30
+  key_epochs: T_max
+
+run:
+  n_epoch: *n_epoch
+  val_per_epoch: 5
+  log_per_iter: 16
+  num_trajectories: 1
+  expert_steps: &rl_steps 10
+  rl_steps: *rl_steps
+  ppo_batch_size: 16
+  warmup_soid_epoch: 5
+  soid_argv:
+    min_ratio: 0.4
+    max_ratio: 0.8
+    min_len: 256
+    max_len: 2048
+    sample_batch: 4
+    resample: false
+    dynamic_batch: false
+    epoch_interval_ratio: 0.8
+    max_batch: 8
+  
