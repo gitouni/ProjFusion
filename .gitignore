@@ -31,3 +31,20 @@ debug_*
 tmp_*
 *.pt
 *.tex
+vis_kitti_speed.py
+transfer_table_kitti.py
+transfer_table_nusc.py
+view_boxplot.py
+view_err_curve.py
+view_feat copy.py
+view_feat.py
+view_gt_corr.py
+view_iter_refine_kitti.py
+view_iter_refine_nusc.py
+view_occlusion.py
+view_pcd_proj_bias.py
+view_pcd_proj.py
+view_pcd.py
+vis_kitti_speed.py
+vis_nn_change.py
+vis_nusc_speed.py
