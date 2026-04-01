@@ -1,4 +1,5 @@
 __pycache__/
+.vscode/
 archieves/
 log/
 fig/
@@ -31,6 +32,7 @@ debug_*
 tmp_*
 *.pt
 *.tex
+metric_cmp.py
 vis_kitti_speed.py
 transfer_table_kitti.py
 transfer_table_nusc.py
