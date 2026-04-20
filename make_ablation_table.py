@@ -4,6 +4,9 @@ import numpy as np
 
 # -------- 配置 --------
 LOG_DIRS = [
+    'log/ablation/projdualfusion_concat_r10_t0.5.json',
+    'log/ablation/projdualfusion_harmonic_depth_r10_t0.5.json',
+    'log/ablation/projdualfusion_harmonic_depth_m0_r10_t0.5.json',
     'log/ablation/projdualfusion_r10_t0.5.json',
     'log/ablation/projdualfusion_harmonic_f2_r10_t0.5.json',
     'log/ablation/projdualfusion_harmonic_r10_t0.5.json',
@@ -11,14 +14,14 @@ LOG_DIRS = [
     'log/ablation/projdualfusion_harmonic_m0_mask_r10_t0.5.json',
     'log/ablation/projdualfusion_rope_r10_t0.5.json',
     'log/ablation/projfusion_harmonic_r10_t0.5.json',
-    'log/ablation/projdualfusion_harmonic_resnet_r10_t0.5.json',
-    'log/ablation/projdualfusion_harmonic_depth_r10_t0.5.json',
-    'log/ablation/projdualfusion_harmonic_depth_m0_r10_t0.5.json',
-    'log/ablation/projdualfusion_concat_r10_t0.5.json'
+    'log/ablation/projdualfusion_harmonic_resnet_r10_t0.5.json'
 ]
 
 # 现在的定义： (Dual, ProjectionMargin, PositionalEmbedding, ImageEncoder)
 OPTION_ROWS_ORIG = [
+    (r"\cmark", r"\xmark", "3D", "concatenation",  "DINOv2"),
+    (r"\cmark", r"\cmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
+    (r"\cmark", r"\xmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
     (r"\cmark", r"\cmark", "3D", "harmonic ($n_h=0$)",  "DINOv2"),
     (r"\cmark", r"\cmark", "3D", "harmonic ($n_h=2$)",  "DINOv2"),
     (r"\cmark", r"\cmark", "3D", "harmonic ($n_h=6$)",  "DINOv2"),
@@ -27,9 +30,6 @@ OPTION_ROWS_ORIG = [
     (r"\cmark", r"\cmark", "3D", "RoPE-2D ($f_B=10^3$)","DINOv2"),
     (r"\xmark", r"\cmark", "3D", "harmonic ($n_h=6$)",  "DINOv2"),
     (r"\cmark", r"\cmark", "3D", "harmonic ($n_h=6$)",  "ResNet-18"),
-    (r"\cmark", r"\cmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
-    (r"\cmark", r"\xmark", "2D", "harmonic ($n_h=6$)",  "DINOv2"),
-    (r"\cmark", r"\xmark", "3D", "concatenation",  "DINOv2"),
 ]
 
 # 4 个选项列：Dual / Projection Margin / Positional Embedding / Image Encoder
@@ -46,7 +46,7 @@ ALL_KEYS = ROT_KEYS + TRANS_KEYS + ACC_JSON_KEYS
 MARK_KEYS = {"RRMSE", "tRMSE", "L1", "L2"}
 
 # 列格式: 4 个选项列 + 1 rotation RMSE + 1 translation RMSE + 2 success rate
-COLS_SPEC = r"cccccccc"
+COLS_SPEC = r"ccccccccc"
 
 # ---------------- 辅助函数 ----------------
 def load_summary(path):
@@ -119,11 +119,11 @@ def fmt_cell(key, val_tuple):
     def cal_fmt(val):
         abs_m = abs(val)
         if abs_m < 10:
-            prec = 3
-        elif abs_m < 100:
             prec = 2
-        elif abs_m < 1000:
+        elif abs_m < 100:
             prec = 1
+        # elif abs_m < 1000:
+        #     prec = 1
         else:
             prec = 0
             
@@ -135,7 +135,7 @@ def fmt_cell(key, val_tuple):
     
     # Success Rate: 固定两位小数百分比
     if key in ACC_JSON_KEYS or key in ["L1", "L2"]:
-        return f"{mean_v:.2f}\\%"
+        return f"{mean_v:.1f}\\%"
     
     # Metrics: 自适应精度
     # Mean < 10: 3位
@@ -210,6 +210,7 @@ def build_table():
         rf"\begin{{tabular}}{{{COLS_SPEC}}}",
         r"\toprule",
         # 表头第 1 行
+        r"\multirow{2}{*}{Index} & "
         r"\multirow{2}{*}{\makecell{Dual \\ Branches}} & "
         r"\multirow{2}{*}{\makecell{Projection \\ Margin}} & "
         r"\multirow{2}{*}{\makecell{Encoding \\ Space}} & "
@@ -219,7 +220,7 @@ def build_table():
         r"\multirow{2}{*}{\makecell{Translation \\ RMSE (cm)$\downarrow$}} & "
         r"\multicolumn{2}{c}{Success Rate (\%)$\uparrow$} \\",
         # 表头第 2 行
-        r" & & & & & & & $L_1$ & $L_2$ \\",
+        r"& & & & & & & & $L_1$ & $L_2$ \\",
         r"\midrule",
     ]
 
@@ -237,8 +238,8 @@ def build_table():
                 elif second_idx.get(key) == i:
                     cell_str = r"\underline{" + cell_str + "}"
             cells.append(cell_str)
-            
-        L.append(" & ".join(opts + cells) + r" \\")
+        index_str = str(i + 1)
+        L.append(" & ".join([index_str] + opts + cells) + r" \\")
 
     L += [
         r"\bottomrule",

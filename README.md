@@ -1,9 +1,25 @@
-# Official Implementation of Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations (RA-L 2026)
-## Paper Link
-[Arxiv](https://arxiv.org/abs/2603.29414) | IEEE
+# Official Implementation of NDCA (RA-L 2026)
+## Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations
+[Arxiv](https://arxiv.org/abs/2603.29414) | [IEEE](https://ieeexplore.ieee.org/document/11480778)
+
+This paper address the problem of camera-LiDAR extrinsic calibration when the initial pose estimate is significantly misaligned. Most existing methods rely on depth map projections to extract point cloud features, but large extrinsic perturbations cause most LiDAR points to project outside the image boundary, degrading feature quality and calibration accuracy.
+
+<div align="center">
+  <img src="assets/miscalibrated-depth.jpg" alt="miscalibrated_depth_map" width="60%">
+</div>
+
+
+
+We propose a native-domain cross-attention mechanism that directly aligns camera and LiDAR features without depth map projection, maintaining geometric consistency and achieving robust calibration even under large initial misalignments (see Abstract for details).
+<div align="center">
+  <img src="assets/abstract.jpg" alt="cross_attention" width="60%">
+</div>
 
 ## Abstract
 Accurate camera-LiDAR fusion relies on precise extrinsic calibration, which fundamentally depends on establishing reliable cross-modal correspondences under potentially large misalignments. Existing learning-based methods typically project LiDAR points into depth maps for feature fusion, which distorts 3D geometry and degrades performance when the extrinsic initialization is far from the ground truth. To address this issue, we propose an extrinsic-aware cross-attention framework that directly aligns image patches and LiDAR point groups in their native domains. The proposed attention mechanism explicitly injects extrinsic parameter hypotheses into the correspondence modeling process, enabling geometry-consistent cross-modal interaction without relying on projected 2D depth maps. Extensive experiments on the KITTI and nuScenes benchmarks demonstrate that our method consistently outperforms state-of-the-art approaches in both accuracy and robustness. Under large extrinsic perturbations, our approach achieves accurate calibration in 88% of KITTI cases and 99% of nuScenes cases, substantially surpassing the second-best baseline. We have open sourced our code on this https URL to benefit the community.
+
+## Pipeline
+![pipeline](assets/framework.jpg)
 
 # Dependencies
 |Pytorch|CUDA|Python|

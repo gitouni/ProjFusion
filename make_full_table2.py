@@ -118,11 +118,11 @@ def fmt_display(key, mean_val, std_val):
     def cal_fmt(val):
         abs_m = abs(val)
         if abs_m < 10:
-            prec = 3
-        elif abs_m < 100:
             prec = 2
-        elif abs_m < 1000:
+        elif abs_m < 100:
             prec = 1
+        # elif abs_m < 1000:
+        #     prec = 1
         else:
             prec = 0
             
@@ -133,7 +133,7 @@ def fmt_display(key, mean_val, std_val):
     
     # Success Rate: 显示百分比，无方差
     if key in ACC_KEYS:
-        return f"{100.0*mean_val:.2f}\\%"
+        return f"{100.0*mean_val:.1f}\\%"
     
     # Metrics: 自适应精度
     mean_fmt = cal_fmt(mean_val)
