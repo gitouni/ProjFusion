@@ -1,6 +1,20 @@
-# Official Implementation of NDCA (RA-L 2026)
-## Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations
-[Arxiv](https://arxiv.org/abs/2603.29414) | [IEEE](https://ieeexplore.ieee.org/document/11480778)
+<h1 align="center">🚀 NativeCross</h1>
+<p align="center">
+  <b>Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/gitouni/ProjFusion?style=social" alt="GitHub Repo stars"/>
+  <img src="https://img.shields.io/github/forks/gitouni/ProjFusion?style=social" alt="GitHub forks"/>
+  <img src="https://img.shields.io/github/last-commit/gitouni/ProjFusion" alt="GitHub last commit"/>
+  <a href="https://ieeexplore.ieee.org/document/11480778">
+    <img src="https://img.shields.io/badge/IEEE-Published-blue.svg" alt="IEEE"/>
+  </a>
+  <a href="https://arxiv.org/abs/2603.29414">
+    <img src="https://img.shields.io/badge/arXiv-2603.29414-b31b1b.svg" alt="arXiv"/>
+  </a>
+</p>
+
 
 This paper address the problem of camera-LiDAR extrinsic calibration when the initial pose estimate is significantly misaligned. Most existing methods rely on depth map projections to extract point cloud features, but large extrinsic perturbations cause most LiDAR points to project outside the image boundary, degrading feature quality and calibration accuracy.
 
