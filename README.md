@@ -35,7 +35,18 @@ Accurate camera-LiDAR fusion relies on precise extrinsic calibration, which fund
 ## Pipeline
 ![pipeline](assets/framework.jpg)
 
+## Metric
+- RRMSE: Rotation RMSE
+- tRMSE: Translation RMSE
+- RMAE: Rotation MAE
+- tMAE: Translation MAE
+- L1: Percentage of results whose RRMSE < and tRMSE < 2.5cm
+- L2: Percentage of results whose RRMSE < 2° and tRMSE < 5cm 
+
+Calculation of metrics can be found in [metrics.py](./metrics.py)
+
 ## Calibration Results on KITTI
+
 ### Range: 15° / 15cm
 
 <table>
