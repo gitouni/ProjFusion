@@ -20,7 +20,6 @@
 - [TL;DR](#tldr)
 - [Abstract](#abstract)
 - [Metric](#metric)
-- [Dependencies](#dependencies)
 - [Preparation](#preparation)
 - [Train Calibration Models](#train-calibration-models)
 - [Evaluate Calibration Models](#evaluate-calibration-models)
