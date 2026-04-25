@@ -124,7 +124,7 @@ def fmt_display(key, mean_val, std_val):
     std_fmt = cal_fmt(std_val)
     m_str = mean_fmt.format(mean_val)
     s_str = std_fmt.format(std_val)
-    return f"{m_str} +- {s_str}"
+    return f"{m_str}"
 
 
 def decorate(text, mark):
