@@ -44,7 +44,7 @@ DEFAULT_METHOD_NAMES = [
 
 SCENARIOS = ["r15_t0.15", "r10_t0.25", "r10_t0.5"]
 RANGE_FG_COLORS = ["#FFFFFF", "#FFFFFF", "#FFFFFF"]
-RANGE_BG_COLORS = ["#000000", "#3A3939", "#000000"]
+RANGE_BG_COLORS = ["#000000", "#000000", "#000000"]
 
 def scenario_to_title(s):
     try:
@@ -164,26 +164,11 @@ def rank_marks(data_pairs, higher_is_better):
 
 def build_dataset_table(root, methods, method_names, dataset_display, dataset_prefix):
     lines = []
-    lines.append(f"# Calibration Results on {dataset_display}")
-    lines.append("")
-    lines.append("- Best: bold")
-    lines.append("- Second: underline")
-    lines.append("")
-    lines.append("<table>")
-    lines.append("  <thead>")
-    lines.append("    <tr>")
-    lines.append("      <th>Dataset</th>")
-    lines.append("      <th>Range</th>")
-    lines.append("      <th>Method</th>")
-    lines.append("      <th>RRMSE (°)</th>")
-    lines.append("      <th>RMAE (°)</th>")
-    lines.append("      <th>tRMSE (cm)</th>")
-    lines.append("      <th>tMAE (cm)</th>")
-    lines.append("      <th>L1 (%)</th>")
-    lines.append("      <th>L2 (%)</th>")
-    lines.append("    </tr>")
-    lines.append("  </thead>")
-    lines.append("  <tbody>")
+    lines.append(f"## Calibration Results on {dataset_display}")
+    # lines.append("")
+    # lines.append("- Best: **bold**")
+    # lines.append("- Second: <u>underline</u>")
+    # lines.append("")
 
     for s_idx, scenario in enumerate(SCENARIOS):
         bg = RANGE_BG_COLORS[s_idx % len(RANGE_BG_COLORS)]
@@ -206,6 +191,25 @@ def build_dataset_table(root, methods, method_names, dataset_display, dataset_pr
             marks_map[key] = rank_marks(vals, HIGHER_IS_BETTER[key])
 
         range_title = scenario_to_title(scenario)
+        th = f' style="background:{bg}; color:{fg};"'
+
+        lines.append(f"### Range: {range_title}")
+        lines.append("")
+        lines.append("<table>")
+        lines.append("  <thead>")
+        lines.append("    <tr>")
+        lines.append(f"      <th{th}>Dataset</th>")
+        lines.append(f"      <th{th}>Method</th>")
+        lines.append(f"      <th{th}>RRMSE (°)</th>")
+        lines.append(f"      <th{th}>RMAE (°)</th>")
+        lines.append(f"      <th{th}>tRMSE (cm)</th>")
+        lines.append(f"      <th{th}>tMAE (cm)</th>")
+        lines.append(f"      <th{th}>L1 (%)</th>")
+        lines.append(f"      <th{th}>L2 (%)</th>")
+        lines.append("    </tr>")
+        lines.append("  </thead>")
+        lines.append("  <tbody>")
+
         for m_idx, method_name in enumerate(method_names):
             cells = []
             for key in ALL_KEYS:
@@ -217,7 +221,6 @@ def build_dataset_table(root, methods, method_names, dataset_display, dataset_pr
             td = f' style="background:{bg}; color:{fg};"'
             lines.append("    <tr>")
             lines.append(f"      <td{td}>{dataset_display}</td>")
-            lines.append(f"      <td{td}>{range_title}</td>")
             lines.append(f"      <td{td}>{method_name}</td>")
             lines.append(f"      <td{td}>{cells[0]}</td>")
             lines.append(f"      <td{td}>{cells[1]}</td>")
@@ -227,9 +230,10 @@ def build_dataset_table(root, methods, method_names, dataset_display, dataset_pr
             lines.append(f"      <td{td}>{cells[5]}</td>")
             lines.append("    </tr>")
 
-    lines.append("  </tbody>")
-    lines.append("</table>")
-    lines.append("")
+        lines.append("  </tbody>")
+        lines.append("</table>")
+        lines.append("")
+
     return "\n".join(lines)
 
 

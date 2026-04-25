@@ -1,26 +1,22 @@
-# Calibration Results on KITTI
-
-- Best: bold
-- Second: underline
+## Calibration Results on KITTI
+### Range: 15° / 15cm
 
 <table>
   <thead>
     <tr>
-      <th>Dataset</th>
-      <th>Range</th>
-      <th>Method</th>
-      <th>RRMSE (°)</th>
-      <th>RMAE (°)</th>
-      <th>tRMSE (cm)</th>
-      <th>tMAE (cm)</th>
-      <th>L1 (%)</th>
-      <th>L2 (%)</th>
+      <th style="background:#000000; color:#FFFFFF;">Dataset</th>
+      <th style="background:#000000; color:#FFFFFF;">Method</th>
+      <th style="background:#000000; color:#FFFFFF;">RRMSE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">RMAE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">tRMSE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">tMAE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">L1 (%)</th>
+      <th style="background:#000000; color:#FFFFFF;">L2 (%)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">CoFiI2P</td>
       <td style="background:#000000; color:#FFFFFF;">4.61</td>
       <td style="background:#000000; color:#FFFFFF;">2.07</td>
@@ -31,7 +27,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">DirectCalib</td>
       <td style="background:#000000; color:#FFFFFF;">13.1</td>
       <td style="background:#000000; color:#FFFFFF;">6.31</td>
@@ -42,7 +37,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibAnything</td>
       <td style="background:#000000; color:#FFFFFF;">18.3</td>
       <td style="background:#000000; color:#FFFFFF;">9.44</td>
@@ -53,7 +47,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibNet</td>
       <td style="background:#000000; color:#FFFFFF;">2.02</td>
       <td style="background:#000000; color:#FFFFFF;">0.76</td>
@@ -64,7 +57,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">RGGNet</td>
       <td style="background:#000000; color:#FFFFFF;">3.88</td>
       <td style="background:#000000; color:#FFFFFF;">1.42</td>
@@ -75,7 +67,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">LCCNet</td>
       <td style="background:#000000; color:#FFFFFF;">2.10</td>
       <td style="background:#000000; color:#FFFFFF;">0.80</td>
@@ -86,7 +77,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">LCCRAFT</td>
       <td style="background:#000000; color:#FFFFFF;"><u>0.53</u></td>
       <td style="background:#000000; color:#FFFFFF;"><b>0.21</b></td>
@@ -97,7 +87,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibDepth</td>
       <td style="background:#000000; color:#FFFFFF;">1.06</td>
       <td style="background:#000000; color:#FFFFFF;">0.42</td>
@@ -108,7 +97,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">15° / 15cm</td>
       <td style="background:#000000; color:#FFFFFF;">Ours</td>
       <td style="background:#000000; color:#FFFFFF;"><b>0.43</b></td>
       <td style="background:#000000; color:#FFFFFF;"><u>0.21</u></td>
@@ -117,108 +105,136 @@
       <td style="background:#000000; color:#FFFFFF;"><b>54.6%</b></td>
       <td style="background:#000000; color:#FFFFFF;"><b>96.6%</b></td>
     </tr>
+  </tbody>
+</table>
+
+### Range: 10° / 25cm
+
+<table>
+  <thead>
     <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">CoFiI2P</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.94</td>
-      <td style="background:#3A3939; color:#FFFFFF;">1.29</td>
-      <td style="background:#3A3939; color:#FFFFFF;">60.7</td>
-      <td style="background:#3A3939; color:#FFFFFF;">28.1</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.0%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.1%</td>
+      <th style="background:#000000; color:#FFFFFF;">Dataset</th>
+      <th style="background:#000000; color:#FFFFFF;">Method</th>
+      <th style="background:#000000; color:#FFFFFF;">RRMSE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">RMAE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">tRMSE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">tMAE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">L1 (%)</th>
+      <th style="background:#000000; color:#FFFFFF;">L2 (%)</th>
     </tr>
+  </thead>
+  <tbody>
     <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">DirectCalib</td>
-      <td style="background:#3A3939; color:#FFFFFF;">13.1</td>
-      <td style="background:#3A3939; color:#FFFFFF;">6.46</td>
-      <td style="background:#3A3939; color:#FFFFFF;">147</td>
-      <td style="background:#3A3939; color:#FFFFFF;">69.9</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.4%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">1.8%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">CalibAnything</td>
-      <td style="background:#3A3939; color:#FFFFFF;">5.32</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.60</td>
-      <td style="background:#3A3939; color:#FFFFFF;">28.2</td>
-      <td style="background:#3A3939; color:#FFFFFF;">14.2</td>
-      <td style="background:#3A3939; color:#FFFFFF;">1.0%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">12.4%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">CalibNet</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.28</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.89</td>
-      <td style="background:#3A3939; color:#FFFFFF;">6.47</td>
-      <td style="background:#3A3939; color:#FFFFFF;">3.15</td>
-      <td style="background:#3A3939; color:#FFFFFF;">4.2%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">26.6%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">RGGNet</td>
-      <td style="background:#3A3939; color:#FFFFFF;">3.99</td>
-      <td style="background:#3A3939; color:#FFFFFF;">1.52</td>
-      <td style="background:#3A3939; color:#FFFFFF;">6.23</td>
-      <td style="background:#3A3939; color:#FFFFFF;">3.05</td>
-      <td style="background:#3A3939; color:#FFFFFF;">4.9%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">17.8%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">LCCNet</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.50</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.96</td>
-      <td style="background:#3A3939; color:#FFFFFF;">6.08</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.98</td>
-      <td style="background:#3A3939; color:#FFFFFF;">7.2%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">27.8%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">LCCRAFT</td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>0.59</b></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>0.23</b></td>
-      <td style="background:#3A3939; color:#FFFFFF;">6.27</td>
-      <td style="background:#3A3939; color:#FFFFFF;">2.95</td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>11.2%</u></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>42.4%</u></td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">CalibDepth</td>
-      <td style="background:#3A3939; color:#FFFFFF;">1.99</td>
-      <td style="background:#3A3939; color:#FFFFFF;">0.74</td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>5.44</u></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>2.60</u></td>
-      <td style="background:#3A3939; color:#FFFFFF;">9.4%</td>
-      <td style="background:#3A3939; color:#FFFFFF;">39.2%</td>
-    </tr>
-    <tr>
-      <td style="background:#3A3939; color:#FFFFFF;">KITTI</td>
-      <td style="background:#3A3939; color:#FFFFFF;">10° / 25cm</td>
-      <td style="background:#3A3939; color:#FFFFFF;">Ours</td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>0.65</u></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><u>0.32</u></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>2.59</b></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>1.29</b></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>48.8%</b></td>
-      <td style="background:#3A3939; color:#FFFFFF;"><b>92.6%</b></td>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">CoFiI2P</td>
+      <td style="background:#000000; color:#FFFFFF;">2.94</td>
+      <td style="background:#000000; color:#FFFFFF;">1.29</td>
+      <td style="background:#000000; color:#FFFFFF;">60.7</td>
+      <td style="background:#000000; color:#FFFFFF;">28.1</td>
+      <td style="background:#000000; color:#FFFFFF;">0.0%</td>
+      <td style="background:#000000; color:#FFFFFF;">0.1%</td>
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
+      <td style="background:#000000; color:#FFFFFF;">DirectCalib</td>
+      <td style="background:#000000; color:#FFFFFF;">13.1</td>
+      <td style="background:#000000; color:#FFFFFF;">6.46</td>
+      <td style="background:#000000; color:#FFFFFF;">147</td>
+      <td style="background:#000000; color:#FFFFFF;">69.9</td>
+      <td style="background:#000000; color:#FFFFFF;">0.4%</td>
+      <td style="background:#000000; color:#FFFFFF;">1.8%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">CalibAnything</td>
+      <td style="background:#000000; color:#FFFFFF;">5.32</td>
+      <td style="background:#000000; color:#FFFFFF;">2.60</td>
+      <td style="background:#000000; color:#FFFFFF;">28.2</td>
+      <td style="background:#000000; color:#FFFFFF;">14.2</td>
+      <td style="background:#000000; color:#FFFFFF;">1.0%</td>
+      <td style="background:#000000; color:#FFFFFF;">12.4%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">CalibNet</td>
+      <td style="background:#000000; color:#FFFFFF;">2.28</td>
+      <td style="background:#000000; color:#FFFFFF;">0.89</td>
+      <td style="background:#000000; color:#FFFFFF;">6.47</td>
+      <td style="background:#000000; color:#FFFFFF;">3.15</td>
+      <td style="background:#000000; color:#FFFFFF;">4.2%</td>
+      <td style="background:#000000; color:#FFFFFF;">26.6%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">RGGNet</td>
+      <td style="background:#000000; color:#FFFFFF;">3.99</td>
+      <td style="background:#000000; color:#FFFFFF;">1.52</td>
+      <td style="background:#000000; color:#FFFFFF;">6.23</td>
+      <td style="background:#000000; color:#FFFFFF;">3.05</td>
+      <td style="background:#000000; color:#FFFFFF;">4.9%</td>
+      <td style="background:#000000; color:#FFFFFF;">17.8%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">LCCNet</td>
+      <td style="background:#000000; color:#FFFFFF;">2.50</td>
+      <td style="background:#000000; color:#FFFFFF;">0.96</td>
+      <td style="background:#000000; color:#FFFFFF;">6.08</td>
+      <td style="background:#000000; color:#FFFFFF;">2.98</td>
+      <td style="background:#000000; color:#FFFFFF;">7.2%</td>
+      <td style="background:#000000; color:#FFFFFF;">27.8%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">LCCRAFT</td>
+      <td style="background:#000000; color:#FFFFFF;"><b>0.59</b></td>
+      <td style="background:#000000; color:#FFFFFF;"><b>0.23</b></td>
+      <td style="background:#000000; color:#FFFFFF;">6.27</td>
+      <td style="background:#000000; color:#FFFFFF;">2.95</td>
+      <td style="background:#000000; color:#FFFFFF;"><u>11.2%</u></td>
+      <td style="background:#000000; color:#FFFFFF;"><u>42.4%</u></td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">CalibDepth</td>
+      <td style="background:#000000; color:#FFFFFF;">1.99</td>
+      <td style="background:#000000; color:#FFFFFF;">0.74</td>
+      <td style="background:#000000; color:#FFFFFF;"><u>5.44</u></td>
+      <td style="background:#000000; color:#FFFFFF;"><u>2.60</u></td>
+      <td style="background:#000000; color:#FFFFFF;">9.4%</td>
+      <td style="background:#000000; color:#FFFFFF;">39.2%</td>
+    </tr>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
+      <td style="background:#000000; color:#FFFFFF;">Ours</td>
+      <td style="background:#000000; color:#FFFFFF;"><u>0.65</u></td>
+      <td style="background:#000000; color:#FFFFFF;"><u>0.32</u></td>
+      <td style="background:#000000; color:#FFFFFF;"><b>2.59</b></td>
+      <td style="background:#000000; color:#FFFFFF;"><b>1.29</b></td>
+      <td style="background:#000000; color:#FFFFFF;"><b>48.8%</b></td>
+      <td style="background:#000000; color:#FFFFFF;"><b>92.6%</b></td>
+    </tr>
+  </tbody>
+</table>
+
+### Range: 10° / 50cm
+
+<table>
+  <thead>
+    <tr>
+      <th style="background:#000000; color:#FFFFFF;">Dataset</th>
+      <th style="background:#000000; color:#FFFFFF;">Method</th>
+      <th style="background:#000000; color:#FFFFFF;">RRMSE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">RMAE (°)</th>
+      <th style="background:#000000; color:#FFFFFF;">tRMSE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">tMAE (cm)</th>
+      <th style="background:#000000; color:#FFFFFF;">L1 (%)</th>
+      <th style="background:#000000; color:#FFFFFF;">L2 (%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="background:#000000; color:#FFFFFF;">KITTI</td>
       <td style="background:#000000; color:#FFFFFF;">CoFiI2P</td>
       <td style="background:#000000; color:#FFFFFF;">2.90</td>
       <td style="background:#000000; color:#FFFFFF;">1.26</td>
@@ -229,7 +245,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">DirectCalib</td>
       <td style="background:#000000; color:#FFFFFF;">12.7</td>
       <td style="background:#000000; color:#FFFFFF;">6.22</td>
@@ -240,7 +255,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibAnything</td>
       <td style="background:#000000; color:#FFFFFF;">6.02</td>
       <td style="background:#000000; color:#FFFFFF;">2.90</td>
@@ -251,7 +265,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibNet</td>
       <td style="background:#000000; color:#FFFFFF;">2.34</td>
       <td style="background:#000000; color:#FFFFFF;">0.92</td>
@@ -262,7 +275,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">RGGNet</td>
       <td style="background:#000000; color:#FFFFFF;">4.03</td>
       <td style="background:#000000; color:#FFFFFF;">1.57</td>
@@ -273,7 +285,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">LCCNet</td>
       <td style="background:#000000; color:#FFFFFF;">2.55</td>
       <td style="background:#000000; color:#FFFFFF;">0.99</td>
@@ -284,7 +295,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">LCCRAFT</td>
       <td style="background:#000000; color:#FFFFFF;"><u>0.95</u></td>
       <td style="background:#000000; color:#FFFFFF;"><b>0.35</b></td>
@@ -295,7 +305,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">CalibDepth</td>
       <td style="background:#000000; color:#FFFFFF;">1.77</td>
       <td style="background:#000000; color:#FFFFFF;">0.67</td>
@@ -306,7 +315,6 @@
     </tr>
     <tr>
       <td style="background:#000000; color:#FFFFFF;">KITTI</td>
-      <td style="background:#000000; color:#FFFFFF;">10° / 50cm</td>
       <td style="background:#000000; color:#FFFFFF;">Ours</td>
       <td style="background:#000000; color:#FFFFFF;"><b>0.76</b></td>
       <td style="background:#000000; color:#FFFFFF;"><u>0.37</u></td>
