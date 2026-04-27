@@ -846,6 +846,8 @@ If you want to **train** our model on the KITTI or nuScenes dataset, you must do
 * Pre-trained PointGPT for KITTI: [GitHub Link](https://github.com/gitouni/ProjFusion/releases/download/pointgpt-weights/kitti_pointgpt_tiny.pth)
 * Pre-trained PointGPT for nuScenes: [GitHub Link](https://github.com/gitouni/ProjFusion/releases/download/pointgpt-weights/nusc_pointgpt_tiny.pth)
 
+If you want train PointGPT by yourself, you can follow instructions in [PointGPT](https://github.com/gitouni/PointGPT).
+
 ### Download Pre-trained Calibration Models
 If you want to **evaluate** our model on the KITTI or nuScenes dataset, you can download our pre-trained calibration models for KITTI and nuScenes: 
 
