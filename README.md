@@ -1,6 +1,6 @@
-<h1 align="center">🚀 NativeCross</h1>
+<h1 align="center">🚀 NativeCross: Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations</h1>
 <p align="center">
-  <b>Native-Domain Cross-Attention for Camera-LiDAR Extrinsic Calibration Under Large Initial Perturbations</b>
+  <b>RA-L 2026</b>
 </p>
 
 <p align="center">
@@ -963,3 +963,6 @@ ${PYTHON_PATH} ${SCRIPT_PATH} "--config_file" ${CONFIG_FILE} '--run_iter' ${RUN_
 - `SCRIPT_PATH`: the path of the evaluation script. It is `test.py` in our codebase.
 - `CONFIG_FILE`: the path of the config file for evaluation. It has already contained the path of pretrained checkpoint and dataset settings.
 - `RUN ITER`: the number of iterations for evaluation. We recommend setting it to 3 for a more stable result. You can set it to 1 for a faster evaluation but the result may fluctuate.
+
+# My other Works
+- [Iterative Camera-Lidar Calibration via Surrogate Diffusion Model (IROS 2025)](https://github.com/gitouni/Diffusion-Calib)
