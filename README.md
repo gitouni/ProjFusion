@@ -96,16 +96,11 @@ export TORCH_CUDA_ARCH_LIST="8.6"
 cd models/tools/csrc/
 python setup.py build_ext --inplace
 ```
-* Build correlation_cuda package for LCCNet
-```bash
-cd models/lccnet/correlation_package/
-python setup.py build_ext --inplace
-```
-* Install pointnet2_ops
+* Install pointnet2_ops (dependence of PointGPT)
 ```bash
 pip install "git+https://github.com/erikwijmans/Pointnet2_PyTorch.git#egg=pointnet2_ops&subdirectory=pointnet2_ops_lib"
 ```
-* Install GPU KNN
+* Install GPU KNN (dependence of PointGPT)
 ```bash
 pip install --upgrade https://github.com/unlimblue/KNN_CUDA/releases/download/0.2/KNN_CUDA-0.2-py3-none-any.whl
 ```
@@ -113,10 +108,6 @@ pip install --upgrade https://github.com/unlimblue/KNN_CUDA/releases/download/0.
 ```bash
 pip install -r requirements.txt
 ```
-<details>
-  <summary>Troubleshooting</summary>
-  The `correlation_cuda` package may be incompatible with CUDA >= 12.0. The failure of building this package only affects implementation of our baseline, LCCNet. If you have CUDA >= 12.0 and still want to implement LCCNET, it would be easy to use correlation pacakge in csrc to re-implement it. To try our best to reproduce LCCNet's performance, we utilize their own correlation package.
-</details>
 
 ### Link KITTI Dataset to the root
 * download KITTI dataset from [https://www.cvlibs.net/datasets/kitti/eval_odometry.php](https://www.cvlibs.net/datasets/kitti/eval_odometry.php). (RGB, Veloydne and Calib data are all required)
@@ -214,11 +205,11 @@ If you want train PointGPT by yourself, you can follow instructions in [PointGPT
 ### Download Pre-trained Calibration Models
 If you want to **evaluate** our model on the KITTI or nuScenes dataset, you can download our pre-trained calibration models for KITTI and nuScenes: 
 
-- [Released Tag](https://github.com/gitouni/ProjFusion/releases/tag/pretrained-model)
-- [kitti yaml](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/kitti_r10_t0.5.yml)
-- [kitti checkpoint](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/model_kitti_r10_t0.5.pth)
-- [nusc yaml](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/nusc_r10_t0.5.yml)
-- [nusc checkpoint](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/model_nusc_r10_t0.5.pth)
+- [Released Tag](https://github.com/gitouni/ProjFusion/releases/tag/pretrained-model) (webpage to download all files)
+  - [kitti yaml](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/kitti_r10_t0.5.yml)
+  - [kitti checkpoint](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/model_kitti_r10_t0.5.pth)
+  - [nusc yaml](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/nusc_r10_t0.5.yml)
+  - [nusc checkpoint](https://github.com/gitouni/ProjFusion/releases/download/pretrained-model/model_nusc_r10_t0.5.pth)
 
 Please note that the config files and checkpoint of our pre-trained models are all in the released tag. You can download them and put them in the `./experiments/` directory as follows:
 ```
